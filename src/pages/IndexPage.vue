@@ -1,0 +1,56 @@
+<template>
+  <q-page class="flex flex-center">
+    <div class="q-gutter-y-md">
+      <div class="row q-gutter-x-md">
+        <div class="col"><q-input v-model="firstName" label="Имя" type="text" /></div>
+        <div class="col"><q-input v-model="lastName" label="Фамилия" type="text" /></div>
+        <div class="col"><q-input v-model="email" label="Почта" type="email" /></div>
+      </div>
+      <div class="row">
+        <div class="col"><q-input v-model="text" type="textarea" /></div>
+      </div>
+      <div class="row justify-end">
+        <div class="col-auto"><q-btn type="submit" @click="sendData" unelevated color="primary" label="отправить"></q-btn>
+        </div>
+      </div>
+    </div>
+
+  </q-page>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'IndexPage',
+
+  setup() {
+    return {};
+  },
+
+  data() {
+    return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      text: ''
+    }
+  },
+
+  methods: {
+    sendData() {
+      let data = {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        text: this.text
+      }
+      try {
+        window.electronAPI.saveRecord(data)
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  }
+})
+</script>
