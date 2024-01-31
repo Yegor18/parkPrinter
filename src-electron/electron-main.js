@@ -4,7 +4,10 @@ import os from 'os'
 import umzug from './modules/DB/migrationConf.js'
 
 // подключаем каналы связи
-require('./ipc/all-ipc.js')
+import {  } from './ipc/all-ipc.js'
+
+// выполняем инициализацию БД
+umzug.up()
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform()
@@ -46,9 +49,6 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow()
-  
-  // выполняем инициализацию БД
-  umzug.up()
 })
 
 app.on('window-all-closed', () => {

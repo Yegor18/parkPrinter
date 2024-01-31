@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <div class="q-gutter-y-md">
-      <div class="row q-gutter-x-md" v-for="setting in settings" :key="setting.id" :setting="setting">
+      <div class="row q-gutter-x-md" v-for="setting in settings" :key="setting.id">
         <div class="col text-subtitle2">{{ setting.name }}</div>
         <div class="col"><q-input v-model="setting.value" type="text" /></div>
       </div>
