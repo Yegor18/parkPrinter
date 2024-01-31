@@ -6,8 +6,12 @@ module.exports = {
   saveSettings:
     // обновление настроек приложения
     ipcMain.handle('save-settings', async (event, settings) => {
-      for (let i = 0; settings.length; i++) {
-        await Setting.update({ value: settings[i].value }, { where: { id: settings[i].id } })
+      for (let i = 0; i < settings.length; i++) {
+        try {
+          await Setting.update({ value: settings[i].value }, { where: { id: settings[i].id } })
+        } catch (e) {
+          console.log(e.original)
+        }
       }
     }),
 
