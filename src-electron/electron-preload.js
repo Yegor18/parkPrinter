@@ -30,6 +30,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron'
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  saveRecord: (record) => ipcRenderer.send('save-record', record)
+contextBridge.exposeInMainWorld('api', {
+  saveSettings: (settings) => ipcRenderer.send('save-settings', settings),
+  getSettings: () => ipcRenderer.invoke('get-settings')
 })

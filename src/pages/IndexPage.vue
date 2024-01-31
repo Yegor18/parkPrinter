@@ -10,7 +10,7 @@
         <div class="col"><q-input v-model="text" type="textarea" /></div>
       </div>
       <div class="row justify-end">
-        <div class="col-auto"><q-btn type="submit" @click="sendData" unelevated color="primary" label="отправить"></q-btn>
+        <div class="col-auto"><q-btn type="submit" unelevated color="primary" label="отправить"></q-btn>
         </div>
       </div>
     </div>
@@ -18,39 +18,11 @@
   </q-page>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup>
+import { ref } from 'vue'
 
-export default defineComponent({
-  name: 'IndexPage',
-
-  setup() {
-    return {};
-  },
-
-  data() {
-    return {
-      firstName: '',
-      lastName: '',
-      email: '',
-      text: ''
-    }
-  },
-
-  methods: {
-    sendData() {
-      let data = {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        text: this.text
-      }
-      try {
-        window.electronAPI.saveRecord(data)
-      } catch(error) {
-        console.log(error)
-      }
-    }
-  }
-})
+let firstName = ref()
+let lastName = ref()
+let email = ref()
+let text = ref()
 </script>

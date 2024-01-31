@@ -1,8 +1,10 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import os from 'os'
-import DB from './modules/DB/DB.js'
-import { event } from 'quasar'
+import umzug from './modules/DB/migrationConf.js'
+
+// подключаем каналы связи
+require('./ipc/all-ipc.js')
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform()
@@ -40,15 +42,14 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
-
-  //реагируем на событие create-record и вносим запись в БД
-  ipcMain.on('save-record', (event, record) => {
-    console.log(record)
-    DB.createRecord(record)
-  })
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  
+  // выполняем инициализацию БД
+  umzug.up()
+})
 
 app.on('window-all-closed', () => {
   if (platform !== 'darwin') {
