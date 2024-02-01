@@ -12,6 +12,7 @@ Printer.init({
 }, {
   sequelize,
   modelName: 'Printer',
+  timestamps: false
 })
 
 module.exports = Printer

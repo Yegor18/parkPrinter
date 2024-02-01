@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /** @type {import('sequelize-cli').Migration} */
 
 module.exports = {
@@ -7,26 +7,25 @@ module.exports = {
     await queryInterface.bulkInsert('Printers', [
       {
         name: 'logopack',
-        driver: 'logopack',
+        driver: 1,
         ipAddress: '4.4.4.4',
         port: '4444'
       },
       {
         name: 'dikai',
-        driver: 'dikai',
+        driver: 2,
         ipAddress: '1.1.1.1',
         port: '1111'
       },
       {
         name: 'windows',
-        driver: 'windows',
+        driver: 3,
         ipAddress: '6.6.6.6',
         port: '6666'
       }
     ])
   },
-
   async down ({ context: queryInterface }) {
     await queryInterface.bulkDelete('Printers', null, {})
   }
-};
+}

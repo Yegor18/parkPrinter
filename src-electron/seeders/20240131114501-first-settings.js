@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 /** @type {import('sequelize-cli').Migration} */
 
 module.exports = {
@@ -21,9 +21,9 @@ module.exports = {
         name: 'Настройка 4',
         value: 'true'
       }
-    ], {});
+    ])
   },
   async down({ context: queryInterface }) {
     await queryInterface.bulkDelete('Settings', null, {})
   }
-};
+}

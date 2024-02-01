@@ -3,9 +3,9 @@
 import Sequelize from 'sequelize';
 
 module.exports = {
-  name: '20240201125821-create-printer',
+  name: '20240201142153-create-driver',
   async up({ context: queryInterface }) {
-    await queryInterface.createTable('Printers', {
+    await queryInterface.createTable('Drivers', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -14,19 +14,10 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING
-      },
-      driver: {
-        type: Sequelize.INTEGER
-      },
-      ipAddress: {
-        type: Sequelize.STRING
-      },
-      port: {
-        type: Sequelize.STRING
       }
     });
   },
   async down({ context: queryInterface }) {
-    await queryInterface.dropTable('Printers');
+    await queryInterface.dropTable('Drivers');
   }
 };
