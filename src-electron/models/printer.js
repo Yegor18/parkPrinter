@@ -6,7 +6,7 @@ class Printer extends Model {}
 
 Printer.init({
   name: DataTypes.STRING,
-  driver: DataTypes.STRING,
+  driver: DataTypes.INTEGER,
   ipAddress: DataTypes.STRING,
   port: DataTypes.STRING
 }, {

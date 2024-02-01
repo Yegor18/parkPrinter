@@ -8,9 +8,8 @@
         <q-tab name="printers-settings" label="Принтеры" />
       </q-tabs>
 
-      <q-tab-panels v-model="tab" animated>
+      <q-tab-panels v-model="tab">
         <q-tab-panel name="main-settings">
-
           <div class="q-gutter-y-md">
             <div class="row q-gutter-x-md" v-for="setting in settings" :key="setting.id">
               <div class="col text-subtitle2">{{ setting.name }}</div>
@@ -22,10 +21,9 @@
               <div class="col-4"><q-btn type="submit" unelevated color="primary" label="выйти" to="/" /></div>
             </div>
           </div>
-
         </q-tab-panel>
-        <q-tab-panel name="printers-settings">
 
+        <q-tab-panel name="printers-settings">
           <q-dialog v-model="addNewPrinterForm">
             <q-card>
               <q-card-section>
@@ -63,16 +61,18 @@
           </q-dialog>
 
           <div class="q-gutter-y-md">
-            <div class="row q-gutter-x-md" v-for="printer in printers" :key="printer.id">
-              <div class="text-uppercase">{{ printer.name }}</div>
-              <div class="text-body2">{{ printer.description }}</div>
-              <q-btn type="submit" unelevated color="negative" label="удалить" @click="deletePrinter = true" />
-              <q-btn type="submit" unelevated color="primary" label="изменить" />
+            <div class="row q-gutter-x-md justify-between" v-for="printer in printers" :key="printer.id">
+              <p class="text-uppercase">{{ printer.name }}</p>
+              <p class="text-body2">Драйвер: {{ printer.driver }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}
+              </p>
+              <div class="q-gutter-md">
+                <q-btn type="submit" dense flat round color="negative" icon="delete" @click="deletePrinter = true" />
+                <q-btn type="submit" dense unelevated color="primary" label="изменить" />
+              </div>
             </div>
             <div class="row justify-center"><q-btn type="submit" unelevated color="primary" label="добавить"
                 @click="addNewPrinterForm = true" /></div>
           </div>
-
         </q-tab-panel>
       </q-tab-panels>
 
@@ -90,20 +90,11 @@ let addNewPrinterForm = ref(false) // окно добавления нового
 let drivers = ref()
 let deletePrinter = ref(false)
 
-printers.value = [
-  { id: 1, name: 'printer1', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-  { id: 2, name: 'printer2', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-  { id: 3, name: 'printer3', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-  { id: 4, name: 'printer4', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-  { id: 5, name: 'printer5', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-  { id: 6, name: 'printer6', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-  { id: 7, name: 'printer7', description: 'qwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwerqwer' },
-]
-
 drivers.value = ['driver 1', 'driver 2', 'driver 3', 'driver 4', 'driver 5', 'driver 6', 'driver 7']
 
 onMounted(async () => {
-  settings.value = await window.api.getSettings()
+  settings.value = await window.api.invoke('get-settings')
+  printers.value = await window.api.invoke('get-printers')
 })
 
 async function saveSettings() {
@@ -111,6 +102,6 @@ async function saveSettings() {
   for (let i = 0; i < settings.value.length; i++) {
     newSettings.push({ id: settings.value[i].id, name: settings.value[i].name, value: settings.value[i].value })
   }
-  await window.api.saveSettings(newSettings)
+  await window.api.invoke('save-settings', newSettings)
 }
 </script>
