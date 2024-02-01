@@ -1,6 +1,6 @@
 'use strict'
 import sequelize from '../modules/DB/connectionToDB'
-const { Model, DataTypes } = require('sequelize')
+import { Model, DataTypes } from 'sequelize'
 
 class Setting extends Model {}
 
