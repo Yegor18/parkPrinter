@@ -1,7 +1,7 @@
 'use strict'
 import sequelize from '../modules/DB/connectionToDB'
 import { Model, DataTypes } from 'sequelize'
-import Driver from './driver'
+import Driver from './Driver'
 
 class Printer extends Model { }
 

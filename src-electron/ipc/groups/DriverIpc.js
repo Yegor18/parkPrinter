@@ -1,12 +1,13 @@
 import { ipcMain } from 'electron'
-import Driver from '../../models/driver'
+import Driver from '../../models/Driver'
 import { unwrap } from '../../modules/helpers'
 
 class DriverIpc {
   constructor() {
     // получение списка драйверов 
     ipcMain.handle('get-drivers', async () => {
-      return unwrap(await Driver.findAll())
+      let namesOfDrivers = unwrap(await Driver.findAll()).map((driver) => driver.name)
+      return namesOfDrivers
     })
   }
 }

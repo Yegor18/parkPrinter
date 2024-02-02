@@ -31,12 +31,12 @@
               </q-card-section>
               <q-card-section>
                 <q-form class="q-gutter-y-md">
-                  <q-input outlined v-model="printerName" label="Название принтера" />
-                  <q-select outlined v-model="printersDriver" :options="drivers" label="Драйвер принтера" />
-                  <q-input outlined v-model="ipAddress" label="IP адрес" />
-                  <q-input outlined v-model="port" label="Порт" />
-                  <div class="q-gutter-x-md">
-                    <q-btn label="сохранить" type="submit" color="primary" unelevated />
+                  <q-input outlined v-model="newPrinter.name" label="Название принтера" />
+                  <q-select outlined v-model="newPrinter.driver" :options="drivers" label="Драйвер принтера" />
+                  <q-input outlined v-model="newPrinter.ipAddress" label="IP адрес" />
+                  <q-input outlined v-model="newPrinter.port" label="Порт" />
+                  <div class="q-gutter-md">
+                    <q-btn label="сохранить" type="submit" color="primary" @click="saveNewPrinter" unelevated />
                     <q-btn label="отмена" type="reset" color="primary" unelevated />
                     <q-btn label="проверить подключение" color="primary" unelevated />
                   </div>
@@ -63,8 +63,7 @@
           <div class="q-gutter-y-md">
             <div class="row q-gutter-x-md justify-between" v-for="printer in printers" :key="printer.id">
               <p class="text-uppercase">{{ printer.name }}</p>
-              <p class="text-body2">Драйвер: {{ printer.Driver.name }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}
-              </p>
+              <p class="text-body2">Драйвер: {{ printer.Driver.name }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port}}</p>
               <div class="q-gutter-md">
                 <q-btn type="submit" dense flat round color="negative" icon="delete" @click="deletePrinter = true" />
                 <q-btn type="submit" dense unelevated color="primary" label="изменить" />
@@ -86,17 +85,22 @@ import { onMounted, ref } from 'vue'
 let settings = ref()
 let tab = ref()
 let printers = ref()
-let addNewPrinterForm = ref(false) // окно добавления нового принтера
 let drivers = ref([])
 let deletePrinter = ref(false)
+
+let addNewPrinterForm = ref(false) // окно добавления нового принтера
+let newPrinter = ref({
+  name: '',
+  driver: '',
+  ipAddress: '',
+  port: ''
+})
 
 onMounted(async () => {
   settings.value = await window.api.invoke('get-settings')
   printers.value = await window.api.invoke('get-printers')
-  await window.api.invoke('get-drivers')
-    .then((driversFromDB) => {
-      drivers.value = driversFromDB.map((driver) => driver.name)
-    })
+  console.log(printers.value)
+  drivers.value = await window.api.invoke('get-drivers')
 })
 
 async function saveSettings() {
@@ -105,5 +109,14 @@ async function saveSettings() {
     newSettings.push({ id: settings.value[i].id, name: settings.value[i].name, value: settings.value[i].value })
   }
   await window.api.invoke('save-settings', newSettings)
+}
+
+async function saveNewPrinter() {
+  await window.api.invoke('save-printer', {
+    name: newPrinter.value.name,
+    driver: newPrinter.value.driver,
+    ipAddress: newPrinter.value.ipAddress,
+    port: newPrinter.value.port
+  })
 }
 </script>
