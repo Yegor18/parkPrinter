@@ -13,4 +13,4 @@ Setting.init({
   timestamps: false
 })
 
-module.exports = Setting
+export default Setting

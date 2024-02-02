@@ -15,4 +15,4 @@ Printer.init({
   timestamps: false
 })
 
-module.exports = Printer
+export default Printer

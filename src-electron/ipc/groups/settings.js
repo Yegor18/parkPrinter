@@ -2,9 +2,9 @@ import { ipcMain } from 'electron'
 import Setting from '../../models/setting.js'
 import { unwrap } from '../../modules/helpers.js'
 
-module.exports = {
-  saveSettings:
-    // обновление настроек приложения
+class SettingIpc {
+	constructor() {
+		// обновление настроек приложения
     ipcMain.handle('save-settings', async (event, settings) => {
       for (let i = 0; i < settings.length; i++) {
         try {
@@ -13,11 +13,13 @@ module.exports = {
           console.log(e.original)
         }
       }
-    }),
+    })
 
-  getSettings:
-    // получение существующих настроек
+		// получение существующих настроек
     ipcMain.handle('get-settings', async () => {
       return unwrap(await Setting.findAll())
     })
+	}
 }
+
+export default new SettingIpc

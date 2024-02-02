@@ -4,7 +4,7 @@ import os from 'os'
 import umzug from './modules/DB/migrationConf.js'
 
 // подключаем каналы связи
-import {  } from './ipc/all-ipc.js'
+import * as ipc from './ipc/all-ipc.js'
 
 // выполняем инициализацию БД
 umzug.up()

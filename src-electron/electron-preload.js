@@ -35,9 +35,3 @@ contextBridge.exposeInMainWorld('api', {
     return await ipcRenderer.invoke(channel, data)
   }
 })
-// ipcRenderer.invoke('save-settings', settings)
-// saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
-// getSettings: () => ipcRenderer.invoke('get-settings'),
-// getPrinters: () => ipcRenderer.invoke('get-printers'),
-// getDrivers: () => ipcRenderer.invoke('get-drivers')
-// })

@@ -12,4 +12,4 @@ Driver.init({
   timestamps: false
 })
 
-module.exports = Driver
+export default Driver
