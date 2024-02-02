@@ -4,7 +4,7 @@
 module.exports = {
   name: '20240201142215-drivers',
   async up ({ context: queryInterface }) {
-    await queryInterface.bulkInsert('Drivers', [
+    await queryInterface.bulkInsert('drivers', [
       {
         name: 'logopack'
       },
@@ -17,6 +17,6 @@ module.exports = {
     ])
   },
   async down ({ context: queryInterface }) {
-    await queryInterface.bulkDelete('Drivers', null, {})
+    await queryInterface.bulkDelete('drivers', null, {})
   }
 }

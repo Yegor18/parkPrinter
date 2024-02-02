@@ -2,7 +2,7 @@
 import sequelize from '../modules/DB/connectionToDB'
 import { Model, DataTypes } from 'sequelize'
 
-class Driver extends Model {}
+class Driver extends Model { }
 
 Driver.init({
   name: DataTypes.STRING

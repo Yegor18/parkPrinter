@@ -5,7 +5,7 @@ import Sequelize from 'sequelize';
 module.exports = {
   name: '20240124155515-create-setting',
   async up({ context: queryInterface }) {
-    await queryInterface.createTable('Settings', {
+    await queryInterface.createTable('settings', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -21,6 +21,6 @@ module.exports = {
     });
   },
   async down({ context: queryInterface }) {
-    await queryInterface.dropTable('Settings');
+    await queryInterface.dropTable('settings');
   }
 };

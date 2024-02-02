@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
-import Setting from '../../models/setting.js'
-import { unwrap } from '../../modules/helpers.js'
+import Setting from '../../models/setting'
+import { unwrap } from '../../modules/helpers'
 
 class SettingIpc {
 	constructor() {

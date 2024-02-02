@@ -5,7 +5,7 @@ import Sequelize from 'sequelize';
 module.exports = {
   name: '20240201125821-create-printer',
   async up({ context: queryInterface }) {
-    await queryInterface.createTable('Printers', {
+    await queryInterface.createTable('printers', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -15,7 +15,7 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      driver: {
+      driver_id: {
         type: Sequelize.INTEGER
       },
       ipAddress: {
@@ -25,8 +25,13 @@ module.exports = {
         type: Sequelize.STRING
       }
     });
+    await queryInterface.addConstraint('printers', {
+      fields: ['driver_id'],
+      type: 'foreign key',
+      references: { table: 'drivers', field: 'id' }
+    });
   },
   async down({ context: queryInterface }) {
-    await queryInterface.dropTable('Printers');
+    await queryInterface.dropTable('printers');
   }
 };

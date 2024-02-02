@@ -1,12 +1,13 @@
 'use strict'
 import sequelize from '../modules/DB/connectionToDB'
 import { Model, DataTypes } from 'sequelize'
+import Driver from './driver'
 
-class Printer extends Model {}
+class Printer extends Model { }
 
 Printer.init({
   name: DataTypes.STRING,
-  driver: DataTypes.INTEGER,
+  driver_id: DataTypes.INTEGER,
   ipAddress: DataTypes.STRING,
   port: DataTypes.STRING
 }, {
@@ -14,5 +15,7 @@ Printer.init({
   modelName: 'Printer',
   timestamps: false
 })
+
+Printer.hasOne(Driver, { foreignKey: 'id' })
 
 export default Printer

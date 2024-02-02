@@ -63,7 +63,7 @@
           <div class="q-gutter-y-md">
             <div class="row q-gutter-x-md justify-between" v-for="printer in printers" :key="printer.id">
               <p class="text-uppercase">{{ printer.name }}</p>
-              <p class="text-body2">Драйвер: {{ printer.driver }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}
+              <p class="text-body2">Драйвер: {{ printer.Driver.name }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}
               </p>
               <div class="q-gutter-md">
                 <q-btn type="submit" dense flat round color="negative" icon="delete" @click="deletePrinter = true" />
@@ -87,14 +87,16 @@ let settings = ref()
 let tab = ref()
 let printers = ref()
 let addNewPrinterForm = ref(false) // окно добавления нового принтера
-let drivers = ref()
+let drivers = ref([])
 let deletePrinter = ref(false)
-
-drivers.value = ['driver 1', 'driver 2', 'driver 3', 'driver 4', 'driver 5', 'driver 6', 'driver 7']
 
 onMounted(async () => {
   settings.value = await window.api.invoke('get-settings')
   printers.value = await window.api.invoke('get-printers')
+  await window.api.invoke('get-drivers')
+    .then((driversFromDB) => {
+      drivers.value = driversFromDB.map((driver) => driver.name)
+    })
 })
 
 async function saveSettings() {

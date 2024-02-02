@@ -4,7 +4,7 @@
 module.exports = {
   name: '20240131114501-first-settings',
   async up({ context: queryInterface }) {
-    await queryInterface.bulkInsert('Settings', [
+    await queryInterface.bulkInsert('settings', [
       {
         name: 'Настройка 1',
         value: '1234'
@@ -24,6 +24,6 @@ module.exports = {
     ])
   },
   async down({ context: queryInterface }) {
-    await queryInterface.bulkDelete('Settings', null, {})
+    await queryInterface.bulkDelete('settings', null, {})
   }
 }
