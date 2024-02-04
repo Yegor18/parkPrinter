@@ -16,6 +16,6 @@ Printer.init({
   timestamps: false
 })
 
-Printer.hasOne(Driver, { foreignKey: 'id' })
+Printer.belongsTo(Driver, { foreignKey: 'driver_id' })
 
 export default Printer
