@@ -1,8 +1,5 @@
-'use strict'
-/** @type {import('sequelize-cli').Migration} */
-
 module.exports = {
-  name: '20240131114501-first-settings',
+  name: '20240131114501-settings',
   async up({ context: queryInterface }) {
     await queryInterface.bulkInsert('settings', [
       {
@@ -24,6 +21,6 @@ module.exports = {
     ])
   },
   async down({ context: queryInterface }) {
-    await queryInterface.bulkDelete('settings', null, {})
+    await queryInterface.bulkDelete('settings')
   }
 }

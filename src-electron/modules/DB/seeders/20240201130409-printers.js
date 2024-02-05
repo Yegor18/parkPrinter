@@ -1,6 +1,3 @@
-'use strict'
-/** @type {import('sequelize-cli').Migration} */
-
 module.exports = {
   name: '20240201130409-printers',
   async up ({ context: queryInterface }) {
@@ -26,6 +23,6 @@ module.exports = {
     ])
   },
   async down ({ context: queryInterface }) {
-    await queryInterface.bulkDelete('printers', null, {})
+    await queryInterface.bulkDelete('printers')
   }
 }

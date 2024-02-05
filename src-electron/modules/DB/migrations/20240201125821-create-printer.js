@@ -1,6 +1,4 @@
-'use strict';
-/** @type {import('sequelize-cli').Migration} */
-import Sequelize from 'sequelize';
+import Sequelize from 'sequelize'
 
 module.exports = {
   name: '20240201125821-create-printer',
@@ -24,14 +22,14 @@ module.exports = {
       port: {
         type: Sequelize.STRING
       }
-    });
+    })
     await queryInterface.addConstraint('printers', {
       fields: ['driver_id'],
       type: 'foreign key',
       references: { table: 'drivers', field: 'id' }
-    });
+    })
   },
   async down({ context: queryInterface }) {
-    await queryInterface.dropTable('printers');
+    await queryInterface.dropTable('printers')
   }
-};
+}

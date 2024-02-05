@@ -1,6 +1,3 @@
-'use strict'
-/** @type {import('sequelize-cli').Migration} */
-
 module.exports = {
   name: '20240201142215-drivers',
   async up ({ context: queryInterface }) {
@@ -17,6 +14,6 @@ module.exports = {
     ])
   },
   async down ({ context: queryInterface }) {
-    await queryInterface.bulkDelete('drivers', null, {})
+    await queryInterface.bulkDelete('drivers')
   }
 }

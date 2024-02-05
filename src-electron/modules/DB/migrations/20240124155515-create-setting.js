@@ -1,6 +1,4 @@
-'use strict';
-/** @type {import('sequelize-cli').Migration} */
-import Sequelize from 'sequelize';
+import Sequelize from 'sequelize'
 
 module.exports = {
   name: '20240124155515-create-setting',
@@ -18,9 +16,9 @@ module.exports = {
       value: {
         type: Sequelize.STRING
       }
-    });
+    })
   },
   async down({ context: queryInterface }) {
-    await queryInterface.dropTable('settings');
+    await queryInterface.dropTable('settings')
   }
-};
+}
