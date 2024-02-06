@@ -31,6 +31,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('api', {
-  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
-  getSettings: () => ipcRenderer.invoke('get-settings')
+  invoke: async (channel, data) => {
+    return await ipcRenderer.invoke(channel, data)
+  }
 })

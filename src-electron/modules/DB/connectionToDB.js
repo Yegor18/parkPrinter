@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize'
 
 const sequelize = new Sequelize({
-  dialect: "sqlite",
-  storage: "./databases/db.db"
+  dialect: 'sqlite',
+  storage: './databases/db.db'
 })
 
 try {
