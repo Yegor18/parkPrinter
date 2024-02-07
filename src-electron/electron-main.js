@@ -2,7 +2,7 @@ import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import os from 'os'
 import umzug from './modules/DB/migrationConf.js'
-import start from './modules/EQUIPMENT/startModule.js'
+import start from './modules/EQUIPMENT/startModuleEquipment.js'
 
 // подключаем каналы связи
 import * as ipc from './modules/IPC/all-ipc.js'
@@ -10,7 +10,8 @@ import * as ipc from './modules/IPC/all-ipc.js'
 // выполняем инициализацию БД
 umzug.up()
 
-start()
+// работа модуля с оборудованием
+// start()
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform()

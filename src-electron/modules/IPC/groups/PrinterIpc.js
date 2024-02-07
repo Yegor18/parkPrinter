@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import ping from 'ping'
+import { tcpPingPort } from 'tcp-ping-port'
 import Printer from '../../DB/models/Printer.js'
 import Driver from '../../DB/models/Driver.js'
 import { unwrap } from '../../helpers.js'
@@ -35,7 +35,7 @@ class PrinterIpc {
 
 		// проверка подключения к принтеру
 		ipcMain.handle('test-connection', async (event, printerIpAddress) => {
-			return await ping.promise.probe(printerIpAddress).then((data) => { return data.alive })
+			return await tcpPingPort(printerIpAddress).then((result) => { return result.online })
 		})
 	}
 }

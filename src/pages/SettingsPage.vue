@@ -60,10 +60,13 @@
 
 					<div class="q-gutter-md">
 						<div class="row q-gutter-md items-center" v-for="printer in printers" :key="printer.id">
-							<div class="text-uppercase text-body1">{{ printer.name }}</div>
-							<div class="text-body1">Драйвер: {{ printer.Driver.name }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}</div>
-							<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeletePrinterForm(printer)" />
-							<q-btn type="submit" dense unelevated color="primary" label="изменить" @click="openSaveOrUpdatePrinterForm(printer)" />
+							<div class="col text-uppercase text-body1">{{ printer.name }}</div>
+							<div class="col text-body1">Драйвер: {{ printer.Driver.name }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}</div>
+							<div class="q-gutter-x-md">
+								<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeletePrinterForm(printer)" />
+							  <q-btn type="submit" dense unelevated color="primary" label="изменить" @click="openSaveOrUpdatePrinterForm(printer)" />
+							  <q-btn type="submit" dense unelevated color="primary" label="вкл" push @click="turnOnPrinter(printer.id)" />
+							</div>
 						</div>
 						<div class="row q-gutter-md justify-end">
 							<div class="col-auto">
@@ -174,5 +177,9 @@ async function testConnection(printerIpAddress) {
 	} else {
 		$q.notify({ message: 'Введите IP адрес!', type: 'negative' })
 	}
+}
+
+async function turnOnPrinter(printerId) {
+
 }
 </script>
