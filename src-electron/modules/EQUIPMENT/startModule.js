@@ -6,24 +6,37 @@ import LogopackDriver from './drivers/LogopackDriver.js'
 import WindowsDriver from './drivers/WindowsDriver.js'
 
 export default start = async () => {
-  let printers
+  let printers = []
   try {
     printers = unwrap(await Printer.findAll({ include: { model: Driver } }))
   } catch(error) {
     console.log(error)
   }
-  printers.map((printer) => {
-    switch(printer.Driver.name) {
-      case 'logopack':
-        printer.Driver.model = new LogopackDriver()
-        break
-      case 'dikai':
-        printer.Driver.model = new DikaiDriver()
-        break
-      case 'windows':
-        printer.Driver.model = new WindowsDriver()
-        break
+  let castPrinters = []
+  for (let i = 0; i < printers.length; i++) {
+    
+    let castPrinter = {
+      id: printers[i].id,
+      name: printers[i].name,
+      ipAddress: printers[i].ipAddress,
+      port: printers[i].port,
+      is_active: printers[i].is_active,
+      driver: { id: printers[i].Driver.id, name: printers[i].Driver.name, model: {} }
     }
-  })
-  console.log(printers)
+    if (printers[i].is_active === 1) {
+      switch(printers[i].Driver.name) {
+        case 'logopack':
+          castPrinter.driver.model = new LogopackDriver(printers[i].ipAddress, printers[i].port)
+          break
+        case 'dikai':
+          castPrinter.driver.model = new DikaiDriver(printers[i].ipAddress, printers[i].port)
+          break
+        case 'windows':
+          castPrinter.driver.model = new WindowsDriver(printers[i].ipAddress, printers[i].port)
+          break
+      }
+    }
+    castPrinters.push(castPrinter)
+  }
+  console.log(castPrinters)
 }
