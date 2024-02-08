@@ -11,20 +11,20 @@ export default class Equipment {
   start() {
     return new Promise(async (resolve, reject) => {
       let ping = await tcpPingPort(this.ipAddress, parseInt(this.port))
-      if (ping.online !== true) {
-        reject('Не удалось получить доступ к удаленному оборудованию');
-        return;
-      }
+      // if (ping.online !== true) {
+      //   reject('Не удалось получить доступ к удаленному оборудованию');
+      //   return;
+      // }
       this.connection = new net.createConnection(this.port, this.ipAddress)
       this.connection.on('connect', () => {
         this.isStarted = true
         console.log(`Подключение выполнить удалось: ${this.ipAddress}:${this.port}`)
         resolve()
       })
-      this.socket.on('error', (error) => {
-        console.log(`Произошла ошибка: ${error}`)
-        reject(`Произошла ошибка (${this.ipAddress}:${this.port}): ${error}`)
-      })
+      // this.socket.on('error', (error) => {
+      //   console.log(`Произошла ошибка: ${error}`)
+      //   reject(`Произошла ошибка (${this.ipAddress}:${this.port}): ${error}`)
+      // })
       this.socket.on('close', (hadError) => {
         if (hadError) {
           console.log(`Соединение закрыто с ошибкой`)
@@ -35,7 +35,7 @@ export default class Equipment {
       })
     })
   }
-  
+
   stop() {
     if (this.connection) {
       try {
@@ -43,7 +43,7 @@ export default class Equipment {
         this.connection.destroy()
         this.isStarted = false
         return true
-      } catch(error) {
+      } catch (error) {
         console.log(error)
         return false
       }
@@ -54,7 +54,7 @@ export default class Equipment {
     try {
       this.connection.write(data)
       return true
-    } catch(error) {
+    } catch (error) {
       console.log(error)
       return false
     }
