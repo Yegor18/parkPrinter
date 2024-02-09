@@ -17,7 +17,7 @@ class EquipmentManager {
       const printer = printers[i]
       if (printer.isActive) {
         try {
-          await printer.driver.model.start()
+          await printer.driver.start()
         } catch (error) {
           console.log(`НЕ УДАЛОСЬ ПОДКЛЮЧИТСЯ К ПРИНТЕРУ: ${error}`)
         }
@@ -35,37 +35,48 @@ class EquipmentManager {
     let castPrinters = printers.map((printer) => {
       let castPrinter = {
         id: printer.id,
-        name: printer.name,
-        isActive: printer.is_active,
-        driver: { id: printer.Driver.id, name: printer.Driver.name, model: null }
+        driver: { }
       }
-      switch (printer.Driver.name) {
-        case 'logopack':
-          castPrinter.driver.model = new LogopackDriver(printer.ipAddress, printer.port)
-          break
-        case 'dikai':
-          castPrinter.driver.model = new DikaiDriver(printer.ipAddress, printer.port)
-          break
-        case 'windows':
-          castPrinter.driver.model = new WindowsDriver(printer.ipAddress, printer.port)
-          break
-      }
+      castPrinter.driver = this.createDriverModel(printer.Driver.name, printer.ipAddress, printer.port)
       return castPrinter
     })
     this.castPrinters = castPrinters
   }
 
-	async updateCastPrinter(printer) {
-		
+	updateCastPrinter(printerId, newDriverName, ipAddress, port) {
+    let driverModel = this.createDriverModel(newDriverName, ipAddress, port)
+    for (let i = 0; i < this.castPrinters.length; i++) {
+      if (this.castPrinters[i].id === printerId) {
+        this.castPrinters[i].driver = driverModel
+      }
+    }
 	}
 
-	async addCastPrinter(printer) {
-		
+	addCastPrinter(printerId, driverName, newPrinter) {
+		let driverModel = this.createDriverModel(driverName, newPrinter.ipAddress, newPrinter.port)
+    this.castPrinters.push({ id: printerId, driver: driverModel })
 	}
 
-	async deleteCastPrinter(printerId) {
-
+	deleteCastPrinter(printerId) {
+    this.castPrinters = this.castPrinters.filter((castPrinter) => castPrinter.id !== printerId)
+    console.log(this.castPrinters)
 	}
+
+  createDriverModel(driverName, ipAddress, port) {
+    let driverModel
+    switch (driverName) {
+      case 'logopack':
+        driverModel = new LogopackDriver(ipAddress, port)
+        break
+      case 'dikai':
+        driverModel = new DikaiDriver(ipAddress, port)
+        break
+      case 'windows':
+        driverModel = new WindowsDriver(ipAddress, port)
+        break
+    }
+    return driverModel
+  }
 }
 
 const equipmentManager = new EquipmentManager()
