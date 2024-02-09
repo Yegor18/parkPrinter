@@ -65,8 +65,8 @@
 						<div class="q-gutter-x-md">
 							<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeletePrinterForm(printer)" />
 							<q-btn type="submit" dense unelevated color="primary" label="изменить" @click="openSaveOrUpdatePrinterForm(printer)" />
-							<q-btn type="submit" dense unelevated color="primary" label="вкл" push @click="turnOnPrinter(printer.id)" />
-							<q-btn type="submit" dense unelevated color="negative" label="выкл" push @click="turnOffPrinter(printer.id)" />
+							<q-btn type="submit" dense unelevated color="primary" label="вкл" push v-if="!printer.is_active" @click="turnOnOffPrinter(printer.id, 'on')" />
+							<q-btn type="submit" dense unelevated color="negative" label="выкл" push v-else @click="turnOnOffPrinter(printer.id, 'off')" />
 						</div>
 					</div>
 					<div class="row q-gutter-md justify-end">
@@ -89,8 +89,6 @@ import { onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
-
-let labelButton = ref('asasas')
 
 let tab = ref()
 
@@ -182,21 +180,19 @@ async function testConnection(printerIpAddress) {
 	}
 }
 
-async function turnOnPrinter(printerId) {
-	window.api.invoke('turn-on-printer', printerId)
-		.then((result) => {
-			if (result.type === 'positive') {
-				$q.notify({ message: result.message, type: result.type })
-			} else {
-				$q.notify({ message: result.message, type: result.type })
-			}
-		})
-		.catch((error) => {
-			$q.notify({ message: error, type: 'negative' })
-		})
-}
-
-async function turnOffPrinter(printerId) {
-	window.api.invoke('turn-off-printer', printerId)
+async function turnOnOffPrinter(printerId, operation) {
+	let result = await window.api.invoke('turn-on-off-printer', { printerId: printerId, operation: operation }).then((result) => {  return result })
+	switch(result.type) {
+		case 'ok-on':
+			$q.notify({ message: result.message, type: 'positive' })
+			break
+		case 'error-on':
+			$q.notify({ message: result.message, type: 'negative' })
+			break
+		case 'ok-off':
+			$q.notify({ message: result.message, type: 'positive' })
+			break
+	}
+	printers.value = await window.api.invoke('get-printers')
 }
 </script>

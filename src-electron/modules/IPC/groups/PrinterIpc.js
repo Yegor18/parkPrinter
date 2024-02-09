@@ -22,7 +22,6 @@ class PrinterIpc {
 				} else {
 					await Printer.update({ name: printer.name, driver_id: driver_id, ipAddress: printer.ipAddress, port: printer.port }, { where: { id: printer.id } })
 				}
-				CastPrinterRepository.createOrUpdateCastPrinters()
 				return 'printer-created-or-updated'
 			} else {
 				return 'this-printer-already-exists'
@@ -32,7 +31,6 @@ class PrinterIpc {
 		// удаление принтера по id
 		ipcMain.handle('delete-printer', async (event, printerId) => {
 			await Printer.destroy({ where: { id: printerId } })
-			CastPrinterRepository.createOrUpdateCastPrinters()
 		})
 
 		// проверка подключения к принтеру
@@ -42,33 +40,26 @@ class PrinterIpc {
 
 		// включение принтера
 		ipcMain.handle('turn-on-off-printer', async (event, { printerId, operation }) => {
-			return new Promise(async (resolve, reject) => {
-				let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver.model
-				if (operation === 'on') {
-					try {
-						if (!driverModel.check()) {
-							driverModel.start()
-							await Printer.update({ is_active: true }, { where: { id: printerId } })
-							await equipmentManager.createOrUpdateCastPrinters()
-							resolve({ type: 'positive', message: 'Подключение установлено!' })
-						} else {
-							resolve({ type: 'info', message: 'Подключение уже установлено!' })
-						}
-					} catch (error) {
-						console.log(error)
-						reject('Ошибка подключения!')
-					}
-				} else if (operation === 'off') {
-					try {
-						if (driverModel.check()) {
-							resolve('Отключение от принтера', driverModel.stop())
-						}
-					} catch(error) {
-						console.log(error)
-						reject('Ошибка при отключении')
+			let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver.model
+			if (operation === 'on') {
+				if (!driverModel.check()) {
+					let isStarted = await driverModel.start().then((result) => { return result })
+					console.log(isStarted)
+					if (isStarted) {
+						await Printer.update({ is_active: true }, { where: { id: printerId } })
+						return { type: 'ok-on', message: 'Подключение установлено!' }
+					} else {
+						return { type: 'error-on', message: 'Не удалось подключиться!' }
 					}
 				}
-			})
+			} else if (operation === 'off') {
+				if (driverModel.check()) {
+					if (driverModel.stop()) {
+						await Printer.update({ is_active: false }, { where: { id: printerId } })
+						return { type: 'ok-off', message: 'Отключение выполнить удалось!' }
+					}
+				}
+			}
 		})
 	}
 }

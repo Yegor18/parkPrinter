@@ -6,8 +6,12 @@ import LogopackDriver from './drivers/LogopackDriver.js'
 import WindowsDriver from './drivers/WindowsDriver.js'
 
 class EquipmentManager {
+	constructor() {
+		this.castPrinters = []
+	}
+
   async start() {
-    await this.createOrUpdateCastPrinters()
+    await this.createCastPrinters()
     let printers = this.castPrinters
     for (let i = 0; i < printers.length; i++) {
       const printer = printers[i]
@@ -21,7 +25,7 @@ class EquipmentManager {
     }
   }
 
-  async createOrUpdateCastPrinters() {
+  async createCastPrinters() {
     let printers = []
     try {
       printers = unwrap(await Printer.findAll({ include: { model: Driver } }))
@@ -32,10 +36,8 @@ class EquipmentManager {
       let castPrinter = {
         id: printer.id,
         name: printer.name,
-        ipAddress: printer.ipAddress,
-        port: printer.port,
         isActive: printer.is_active,
-        driver: { id: printer.Driver.id, name: printer.Driver.name, model: {} }
+        driver: { id: printer.Driver.id, name: printer.Driver.name, model: null }
       }
       switch (printer.Driver.name) {
         case 'logopack':
@@ -52,6 +54,18 @@ class EquipmentManager {
     })
     this.castPrinters = castPrinters
   }
+
+	async updateCastPrinter(printer) {
+		
+	}
+
+	async addCastPrinter(printer) {
+		
+	}
+
+	async deleteCastPrinter(printerId) {
+
+	}
 }
 
 const equipmentManager = new EquipmentManager()
