@@ -6,19 +6,26 @@ export default class Equipment {
 	constructor(ipAddress, port) {
 		this.ipAddress = ipAddress
 		this.port = port
+		this.connection = new net.Socket()
+		this.connection.on('connect', () => {
+			this.isStarted = true
+			console.log(`===> ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО: ${this.ipAddress}:${this.port}`)
+		})
+		this.connection.on('error', () => {
+			this.isStarted = false
+			console.log(`===> ВОЗНИКЛА ОШИБКА НА ПОДКЛЮЧЕНИИ: ${this.ipAddress}:${this.port}`)
+		})
 	}
 
 	async start() {
 		let ping = await tcpPingPort(this.ipAddress, parseInt(this.port)).then((result) => { return result })
 		if (ping.online !== true) {
+			this.isStarted = false
 			console.log(`===> НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ: ${this.ipAddress}:${this.port}`)
 			return false
 		}
-		this.connection = new net.createConnection(this.port, this.ipAddress)
-		return this.connection.on('connect', () => {
-			this.isStarted = true
-			console.log(`===> ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО: ${this.ipAddress}:${this.port}`)
-		}).connecting
+		this.connection.connect(this.port, this.ipAddress)
+		return true
 	}
 
 	stop() {

@@ -76,6 +76,9 @@
 						<div class="col-auto">
 							<q-btn type="submit" dense unelevated color="primary" label="выйти" to="/" />
 						</div>
+						<div class="col-auto">
+							<q-btn type="submit" dense unelevated color="primary" label="обновить" @click="refresh" />
+						</div>
 					</div>
 				</div>
 			</q-tab-panel>
@@ -194,5 +197,11 @@ async function turnOnOffPrinter(printerId, operation) {
 			break
 	}
 	printers.value = await window.api.invoke('get-printers')
+}
+
+async function refresh() {
+	settings.value = await window.api.invoke('get-settings')
+	printers.value = await window.api.invoke('get-printers')
+	drivers.value = await window.api.invoke('get-drivers')
 }
 </script>

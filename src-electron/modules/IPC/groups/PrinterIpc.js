@@ -17,16 +17,16 @@ class PrinterIpc {
 			let driver_id = unwrap(await Driver.findOne({ where: { name: printer.driver } }).then((driver) => { return driver.id }))
 			let existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, driver_id: driver_id, ipAddress: printer.ipAddress, port: printer.port } }))
 			if (existingPrinter === null) {
-        let newPrinter = { name: printer.name, driver_id: driver_id, ipAddress: printer.ipAddress, port: printer.port }
+				let newPrinter = { name: printer.name, driver_id: driver_id, ipAddress: printer.ipAddress, port: printer.port, is_active: false }
 				if (printer.id === '') {
 					await Printer.create(newPrinter).then(async () => {
-            let printerId = unwrap(await Printer.max('id'))
-            equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter)
-          })
+						let printerId = unwrap(await Printer.max('id'))
+						equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter)
+					})
 				} else {
 					await Printer.update(newPrinter, { where: { id: printer.id } }).then(() => {
-            equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter.ipAddress, newPrinter.port)
-          })
+						equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter.ipAddress, newPrinter.port)
+					})
 				}
 				return 'printer-created-or-updated'
 			} else {
@@ -37,8 +37,8 @@ class PrinterIpc {
 		// удаление принтера по id
 		ipcMain.handle('delete-printer', async (event, printerId) => {
 			await Printer.destroy({ where: { id: printerId } }).then(() => {
-        equipmentManager.deleteCastPrinter(printerId)
-      })
+				equipmentManager.deleteCastPrinter(printerId)
+			})
 		})
 
 		// проверка подключения к принтеру
@@ -46,7 +46,7 @@ class PrinterIpc {
 			return await tcpPingPort(printerIpAddress).then((result) => { return result.online })
 		})
 
-		// включение принтера
+		// включение и отключение принтера
 		ipcMain.handle('turn-on-off-printer', async (event, { printerId, operation }) => {
 			let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver
 			if (operation === 'on') {
@@ -66,6 +66,19 @@ class PrinterIpc {
 						return { type: 'ok-off', message: 'Отключение выполнить удалось!' }
 					}
 				}
+			}
+		})
+
+		ipcMain.handle('get-failed-connections-to-printers', () => {
+			equipmentManager.checkAllConnections()
+			let message = ''
+			if (equipmentManager.failedConnections.length !== 0) {
+				message = 'Не удалось подключиться к следующим адресам: ' + equipmentManager.failedConnections.map((failedConnection) => {
+					return ` ${failedConnection.ipAddress}:${failedConnection.port}`
+				})
+				return message
+			} else {
+				return message
 			}
 		})
 	}

@@ -8,19 +8,19 @@ import WindowsDriver from './drivers/WindowsDriver.js'
 class EquipmentManager {
 	constructor() {
 		this.castPrinters = []
+		this.failedConnections = []
 	}
 
   async start() {
     await this.createCastPrinters()
-    let printers = this.castPrinters
-    for (let i = 0; i < printers.length; i++) {
-      const printer = printers[i]
+    for (let i = 0; i < this.castPrinters.length; i++) {
+      const printer = this.castPrinters[i]
       if (printer.isActive) {
-        try {
-          await printer.driver.start()
-        } catch (error) {
-          console.log(`НЕ УДАЛОСЬ ПОДКЛЮЧИТСЯ К ПРИНТЕРУ: ${error}`)
-        }
+        await printer.driver.start().then(async (result) => {
+					if (!result) {
+						this.failedConnections.push({ ipAddress: printer.driver.ipAddress, port: printer.driver.port })
+					}
+				})
       }
     }
   }
@@ -35,6 +35,7 @@ class EquipmentManager {
     let castPrinters = printers.map((printer) => {
       let castPrinter = {
         id: printer.id,
+				isActive: printer.is_active,
         driver: { }
       }
       castPrinter.driver = this.createDriverModel(printer.Driver.name, printer.ipAddress, printer.port)
@@ -47,6 +48,7 @@ class EquipmentManager {
     let driverModel = this.createDriverModel(newDriverName, ipAddress, port)
     for (let i = 0; i < this.castPrinters.length; i++) {
       if (this.castPrinters[i].id === printerId) {
+				this.castPrinters[i].isActive = false
         this.castPrinters[i].driver = driverModel
       }
     }
@@ -54,12 +56,11 @@ class EquipmentManager {
 
 	addCastPrinter(printerId, driverName, newPrinter) {
 		let driverModel = this.createDriverModel(driverName, newPrinter.ipAddress, newPrinter.port)
-    this.castPrinters.push({ id: printerId, driver: driverModel })
+    this.castPrinters.push({ id: printerId, isActive: false, driver: driverModel })
 	}
 
 	deleteCastPrinter(printerId) {
     this.castPrinters = this.castPrinters.filter((castPrinter) => castPrinter.id !== printerId)
-    console.log(this.castPrinters)
 	}
 
   createDriverModel(driverName, ipAddress, port) {
@@ -77,6 +78,16 @@ class EquipmentManager {
     }
     return driverModel
   }
+
+	checkAllConnections() {
+		this.failedConnections = []
+		for (let i = 0; i < this.castPrinters.length; i++) {
+			const printer = this.castPrinters[i]
+      if (!printer.driver.check() && printer.isActive) {
+				this.failedConnections.push({ ipAddress: printer.driver.ipAddress, port: printer.driver.port })
+			}
+		}
+	}
 }
 
 const equipmentManager = new EquipmentManager()
