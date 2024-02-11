@@ -19,6 +19,8 @@ class EquipmentManager {
         await printer.driver.start().then(async (result) => {
 					if (!result) {
 						this.failedConnections.push({ ipAddress: printer.driver.ipAddress, port: printer.driver.port })
+						await Printer.update({ is_active: false }, { where: { id: printer.id } })
+						this.castPrinters[i].isActive = false
 					}
 				})
       }
@@ -85,6 +87,8 @@ class EquipmentManager {
 			const printer = this.castPrinters[i]
       if (!printer.driver.check() && printer.isActive) {
 				this.failedConnections.push({ ipAddress: printer.driver.ipAddress, port: printer.driver.port })
+				Printer.update({ is_active: false }, { where: { id: printer.id } })
+				this.castPrinters[i].isActive = false
 			}
 		}
 	}

@@ -54,6 +54,7 @@ class PrinterIpc {
 					let isStarted = await driverModel.start().then((result) => { return result })
 					if (isStarted) {
 						await Printer.update({ is_active: true }, { where: { id: printerId } })
+						equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).isActive = true
 						return { type: 'ok-on', message: 'Подключение установлено!' }
 					} else {
 						return { type: 'error-on', message: 'Не удалось подключиться!' }
@@ -63,22 +64,36 @@ class PrinterIpc {
 				if (driverModel.check()) {
 					if (driverModel.stop()) {
 						await Printer.update({ is_active: false }, { where: { id: printerId } })
+						equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).isActive = false
 						return { type: 'ok-off', message: 'Отключение выполнить удалось!' }
 					}
 				}
 			}
 		})
 
-		ipcMain.handle('get-failed-connections-to-printers', () => {
-			equipmentManager.checkAllConnections()
+		// проверка подключения при старте и по таймеру
+		ipcMain.handle('get-failed-connections-to-printers', (evet, rule) => {
 			let message = ''
-			if (equipmentManager.failedConnections.length !== 0) {
-				message = 'Не удалось подключиться к следующим адресам: ' + equipmentManager.failedConnections.map((failedConnection) => {
-					return ` ${failedConnection.ipAddress}:${failedConnection.port}`
-				})
-				return message
-			} else {
-				return message
+			if (rule === 'atStart') {
+				if (equipmentManager.failedConnections.length !== 0) {
+					message = 'Не удалось подключиться к следующим адресам: ' + equipmentManager.failedConnections.map((failedConnection) => {
+						return ` ${failedConnection.ipAddress}:${failedConnection.port}`
+					})
+					equipmentManager.failedConnections = []
+					return message
+				} else {
+					return message
+				}
+			} else if (rule === 'byTimer') {
+				equipmentManager.checkAllConnections()
+				if (equipmentManager.failedConnections.length !== 0) {
+					message = 'Не удалось подключиться к следующим адресам: ' + equipmentManager.failedConnections.map((failedConnection) => {
+						return ` ${failedConnection.ipAddress}:${failedConnection.port}`
+					})
+					return message
+				} else {
+					return message
+				}
 			}
 		})
 	}
