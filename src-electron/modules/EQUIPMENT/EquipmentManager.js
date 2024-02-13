@@ -8,7 +8,6 @@ import WindowsDriver from './drivers/WindowsDriver.js'
 class EquipmentManager {
 	constructor() {
 		this.castPrinters = []
-		this.failedConnections = []
 	}
 
   async start() {
@@ -16,27 +15,18 @@ class EquipmentManager {
     for (let i = 0; i < this.castPrinters.length; i++) {
       const printer = this.castPrinters[i]
       if (printer.isActive) {
-        await printer.driver.start().then(async (result) => {
-					if (!result) {
-						this.failedConnections.push({ ipAddress: printer.driver.ipAddress, port: printer.driver.port })
-						await Printer.update({ is_active: false }, { where: { id: printer.id } })
-						this.castPrinters[i].isActive = false
-					}
-				})
+        await printer.driver.start()
       }
     }
   }
 
   async createCastPrinters() {
     let printers = []
-    try {
-      printers = unwrap(await Printer.findAll({ include: { model: Driver } }))
-    } catch (error) {
-      console.log(error)
-    }
+		printers = unwrap(await Printer.findAll({ include: { model: Driver } }))
     let castPrinters = printers.map((printer) => {
       let castPrinter = {
         id: printer.id,
+				name: printer.name,
 				isActive: printer.is_active,
         driver: { }
       }
@@ -48,7 +38,7 @@ class EquipmentManager {
 
 	updateCastPrinter(printerId, newDriverName, ipAddress, port) {
     let driverModel = this.createDriverModel(newDriverName, ipAddress, port)
-    for (let i = 0; i < this.castPrinters.length; i++) {
+		for (let i = 0; i < this.castPrinters.length; i++) {
       if (this.castPrinters[i].id === printerId) {
 				this.castPrinters[i].isActive = false
         this.castPrinters[i].driver = driverModel
@@ -81,16 +71,16 @@ class EquipmentManager {
     return driverModel
   }
 
-	checkAllConnections() {
-		this.failedConnections = []
+	async checkAllConnections() {
+		let failedConnections = []
 		for (let i = 0; i < this.castPrinters.length; i++) {
 			const printer = this.castPrinters[i]
       if (!printer.driver.check() && printer.isActive) {
-				this.failedConnections.push({ ipAddress: printer.driver.ipAddress, port: printer.driver.port })
-				Printer.update({ is_active: false }, { where: { id: printer.id } })
+				failedConnections.push({ printerId: printer.id, printer: printer.name, ipAddress: printer.driver.ipAddress, port: printer.driver.port })
 				this.castPrinters[i].isActive = false
 			}
 		}
+		return failedConnections
 	}
 }
 

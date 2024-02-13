@@ -14,7 +14,8 @@
 						<div class="col-auto"><q-input v-model="setting.value" type="text" /></div>
 					</div>
 					<div class="row q-gutter-md justify-end">
-						<div class="col-auto"><q-btn type="submit" dense unelevated color="primary" label="сохранить" @click="saveSettings" /></div>
+						<div class="col-auto"><q-btn type="submit" dense unelevated color="primary" label="сохранить"
+								@click="saveSettings" /></div>
 						<div class="col-auto"><q-btn type="submit" dense unelevated color="primary" label="выйти" to="/" /></div>
 					</div>
 				</div>
@@ -58,27 +59,34 @@
 					</q-card>
 				</q-dialog>
 
-				<div class="q-gutter-md">
-					<div class="row q-gutter-md items-center" v-for="printer in printers" :key="printer.id">
-						<div class="col text-uppercase text-body1">{{ printer.name }}</div>
-						<div class="col text-body1">Драйвер: {{ printer.Driver.name }}, IP: {{ printer.ipAddress }}, Порт: {{ printer.port }}</div>
-						<div class="q-gutter-x-md">
+				<q-list bordered separator class="">
+					<q-item v-for="printer in printers" :key="printer.id">
+						<q-item-section no-wrap>
+							<q-item-label class="text-uppercase" header>{{ printer.name }}</q-item-label>
+							<q-item-label class="text-body1">Драйвер: {{ printer.Driver.name }} IP адрес: {{ printer.ipAddress }} Порт: {{ printer.port }}</q-item-label>
+						</q-item-section>
+						<q-item-section side>
 							<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeletePrinterForm(printer)" />
+						</q-item-section>
+						<q-item-section side>
 							<q-btn type="submit" dense unelevated color="primary" label="изменить" @click="openSaveOrUpdatePrinterForm(printer)" />
-							<q-btn type="submit" dense unelevated color="primary" label="вкл" push v-if="!printer.is_active" @click="turnOnOffPrinter(printer.id, 'on')" />
-							<q-btn type="submit" dense unelevated color="negative" label="выкл" push v-else @click="turnOnOffPrinter(printer.id, 'off')" />
-						</div>
+						</q-item-section>
+						<q-item-section side>
+							<q-btn type="submit" dense unelevated color="positive" icon="play_arrow" push v-if="!printer.is_active" @click="turnOnOffPrinter(printer.id, 'on')" />
+							<q-btn type="submit" dense unelevated color="negative" icon="pause" push v-else @click="turnOnOffPrinter(printer.id, 'off')" />
+						</q-item-section>
+					</q-item>
+				</q-list>
+				<div class="row q-mt-md q-gutter-x-md justify-end">
+					<div class="col-auto">
+						<q-btn type="submit" dense unelevated color="primary" label="добавить"
+							@click="saveOrUpdatePrinterForm = true; titleForSaveOrUpdatePrinterForm = 'Добавить принтер'" />
 					</div>
-					<div class="row q-gutter-md justify-end">
-						<div class="col-auto">
-							<q-btn type="submit" dense unelevated color="primary" label="добавить" @click="saveOrUpdatePrinterForm = true; titleForSaveOrUpdatePrinterForm = 'Добавить принтер'" />
-						</div>
-						<div class="col-auto">
-							<q-btn type="submit" dense unelevated color="primary" label="выйти" to="/" />
-						</div>
-						<div class="col-auto">
-							<q-btn type="submit" dense unelevated color="primary" label="обновить" @click="refresh" />
-						</div>
+					<div class="col-auto">
+						<q-btn type="submit" dense unelevated color="primary" label="выйти" to="/" />
+					</div>
+					<div class="col-auto">
+						<q-btn type="submit" dense unelevated color="primary" label="обновить" @click="refresh" />
 					</div>
 				</div>
 			</q-tab-panel>
@@ -93,7 +101,7 @@ import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
 
-let tab = ref()
+let tab = ref('main-settings')
 
 let settings = ref()
 let printers = ref()
@@ -169,23 +177,22 @@ async function deletePrinter(printerId) {
 async function testConnection(printerIpAddress) {
 	if (printerIpAddress !== '') {
 		forSpinner.value = true
-		await window.api.invoke('test-connection', printerIpAddress)
-			.then((result) => {
-				if (result) {
-					$q.notify({ message: 'Подключение установлено!', type: 'positive' })
-				} else {
-					$q.notify({ message: 'Подключение НЕ установлено!', type: 'negative' })
-				}
-				forSpinner.value = false
-			})
+		let result = await window.api.invoke('test-connection', printerIpAddress)
+		console.log(result)
+		if (result) {
+			$q.notify({ message: 'Подключение установлено!', type: 'positive' })
+		} else {
+			$q.notify({ message: 'Подключение НЕ установлено!', type: 'negative' })
+		}
+		forSpinner.value = false
 	} else {
 		$q.notify({ message: 'Введите IP адрес!', type: 'negative' })
 	}
 }
 
 async function turnOnOffPrinter(printerId, operation) {
-	let result = await window.api.invoke('turn-on-off-printer', { printerId: printerId, operation: operation }).then((result) => {  return result })
-	switch(result.type) {
+	let result = await window.api.invoke('turn-on-off-printer', { printerId: printerId, operation: operation })
+	switch (result.type) {
 		case 'ok-on':
 			$q.notify({ message: result.message, type: 'positive' })
 			break
@@ -194,6 +201,9 @@ async function turnOnOffPrinter(printerId, operation) {
 			break
 		case 'ok-off':
 			$q.notify({ message: result.message, type: 'positive' })
+			break
+		case 'error-off':
+			$q.notify({ message: result.message, type: 'negative' })
 			break
 	}
 	printers.value = await window.api.invoke('get-printers')

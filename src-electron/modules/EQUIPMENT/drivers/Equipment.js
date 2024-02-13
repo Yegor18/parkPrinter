@@ -18,7 +18,7 @@ export default class Equipment {
 	}
 
 	async start() {
-		let ping = await tcpPingPort(this.ipAddress, parseInt(this.port)).then((result) => { return result })
+		let ping = await tcpPingPort(this.ipAddress, parseInt(this.port))
 		if (ping.online !== true) {
 			this.isStarted = false
 			console.log(`===> НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ: ${this.ipAddress}:${this.port}`)
