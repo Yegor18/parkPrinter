@@ -4,6 +4,7 @@
 		<q-tabs v-model="tab" dense class="text-grey" active-color="primary" indicator-color="primary" narrow-indicator>
 			<q-tab name="main-settings" label="Основные настройки" />
 			<q-tab name="printers-settings" label="Принтеры" />
+      <q-tab name="data-sources-settings" label="Источники данных" />
 		</q-tabs>
 
 		<q-tab-panels v-model="tab">
@@ -59,7 +60,7 @@
 					</q-card>
 				</q-dialog>
 
-				<q-list bordered separator class="">
+				<q-list bordered separator>
 					<q-item v-for="printer in printers" :key="printer.id">
 						<q-item-section no-wrap>
 							<q-item-label class="text-uppercase" header>{{ printer.name }}</q-item-label>
@@ -90,6 +91,10 @@
 					</div>
 				</div>
 			</q-tab-panel>
+
+      <q-tab-panel name="data-sources-settings">
+        <DataSourcesSettingsTabPanel />
+      </q-tab-panel>
 		</q-tab-panels>
 
 	</q-page>
@@ -98,6 +103,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
+import DataSourcesSettingsTabPanel from 'components/tab-panels/DataSourcesSettingsTabPanel.vue'
 
 const $q = useQuasar()
 
