@@ -1,7 +1,7 @@
 {
-  "name": "first-project",
+  "name": "encode-pfl",
   "version": "0.0.1",
-  "description": "first project",
+  "description": "encode-pfl",
   "productName": "Quasar App",
   "author": "",
   "private": true,
@@ -14,10 +14,10 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
-    "ping": "^0.4.4",
     "quasar": "^2.6.0",
     "sequelize": "^6.35.2",
     "sqlite3": "^5.1.7",
+    "tcp-ping-port": "^1.0.1",
     "umzug": "^3.5.1",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0"

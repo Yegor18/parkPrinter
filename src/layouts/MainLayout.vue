@@ -14,4 +14,21 @@
 </template>
 
 <script setup>
+import { useQuasar } from 'quasar'
+import { onMounted } from 'vue'
+
+const $q = useQuasar()
+
+onMounted(async () => {
+  getConnections()
+})
+
+async function getConnections() {
+  setInterval(async () => {
+    let message = await window.api.invoke('get-failed-connections-to-printers')
+    if (message !== '') {
+      $q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [ { label: 'принято', color: 'dark' } ] })
+    }
+  }, 2000)
+}
 </script>

@@ -8,7 +8,8 @@ Printer.init({
 	name: DataTypes.STRING,
 	driver_id: DataTypes.INTEGER,
 	ipAddress: DataTypes.STRING,
-	port: DataTypes.STRING
+	port: DataTypes.STRING,
+  is_active: DataTypes.BOOLEAN
 }, {
 	sequelize,
 	modelName: 'Printer',
