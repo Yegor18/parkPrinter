@@ -13,7 +13,8 @@ Printer.init({
 }, {
 	sequelize,
 	modelName: 'Printer',
-	timestamps: false
+	timestamps: false,
+	tableName: 'printers'
 })
 
 Printer.belongsTo(Driver, { foreignKey: 'driver_id' })

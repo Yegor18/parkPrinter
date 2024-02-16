@@ -8,7 +8,8 @@ Driver.init({
 }, {
 	sequelize,
 	modelName: 'Driver',
-	timestamps: false
+	timestamps: false,
+	tableName: 'drivers'
 })
 
 export default Driver

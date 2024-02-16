@@ -9,7 +9,8 @@ Setting.init({
 }, {
 	sequelize,
 	modelName: 'Setting',
-	timestamps: false
+	timestamps: false,
+	tableName: 'settings'
 })
 
 export default Setting
