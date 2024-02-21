@@ -15,6 +15,7 @@
   "dependencies": {
     "@quasar/extras": "^1.16.4",
     "quasar": "^2.6.0",
+    "read-excel-file": "^5.7.1",
     "sequelize": "^6.35.2",
     "sqlite3": "^5.1.7",
     "tcp-ping-port": "^1.0.1",

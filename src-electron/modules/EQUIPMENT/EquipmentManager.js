@@ -1,7 +1,10 @@
+import DataSource from '../DB/models/DataSource.js'
 import Driver from '../DB/models/Driver.js'
 import Printer from '../DB/models/Printer.js'
 import { unwrap } from '../helpers.js'
 import DikaiDriver from './drivers/DikaiDriver.js'
+import EndToEndPrinterDriver from './drivers/EndToEndPrinterDriver.js'
+import FilePrinterDriver from './drivers/FilePrinterDriver.js'
 import LogopackDriver from './drivers/LogopackDriver.js'
 import WindowsDriver from './drivers/WindowsDriver.js'
 
@@ -22,7 +25,7 @@ class EquipmentManager {
 
   async createCastPrinters() {
     let printers = []
-		printers = unwrap(await Printer.findAll({ include: { model: Driver } }))
+		printers = unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource } ] }))
     let castPrinters = printers.map((printer) => {
       let castPrinter = {
         id: printer.id,
@@ -55,7 +58,7 @@ class EquipmentManager {
     this.castPrinters = this.castPrinters.filter((castPrinter) => castPrinter.id !== printerId)
 	}
 
-  createDriverModel(driverName, ipAddress, port) {
+  createDriverModel(driverName, ipAddress, port, dataSource) {
     let driverModel
     switch (driverName) {
       case 'logopack':
@@ -66,6 +69,12 @@ class EquipmentManager {
         break
       case 'windows':
         driverModel = new WindowsDriver(ipAddress, port)
+        break
+      case 'Файловый принтер':
+        driverModel = new FilePrinterDriver(ipAddress, port)
+        break
+      case 'Сквозной TCP принтер':
+        driverModel = new EndToEndPrinterDriver(ipAddress, port)
         break
     }
     return driverModel

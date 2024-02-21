@@ -31,8 +31,8 @@
 				<q-form class="col q-gutter-y-md" @submit.prevent>
 					<q-input outlined v-model="printerModel.name" label="Название принтера" />
 					<q-select outlined v-model="printerModel.driver" :options="drivers" label="Драйвер принтера" />
-					<q-input outlined v-model="printerModel.ipAddress" label="IP адрес" />
-					<q-input outlined v-model="printerModel.port" label="Порт" />
+					<q-input outlined v-model="printerModel.ipAddress" mask="###.###.###.###" label="IP адрес" />
+					<q-input outlined v-model="printerModel.port" mask="#####" label="Порт" />
 					<div class="row q-gutter-x-md">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="savePrinter" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="closeSaveOrUpdatePrinterForm" /></div>

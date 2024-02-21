@@ -11,7 +11,7 @@
 			<q-item-section class="col-auto">
 				<div v-if="dataSource.TypeOfDataSource.name === 'XLS' || dataSource.TypeOfDataSource.name === 'CSV'" class="row q-gutter-x-md">
 					<q-input v-model="dataSource.config.pathToFile" readonly type="text" label="Путь к файлу" outlined />
-					<q-input v-model="dataSource.config.pollingFrequency" readonly type="text" label="Путь к файлу" outlined />
+					<q-input v-model="dataSource.config.pollingFrequency" readonly type="text" label="Частота опроса файла" outlined />
 				</div>
 				<div v-else-if="dataSource.TypeOfDataSource.name === 'API Endpoint'">
 					<q-input v-model="dataSource.config.token" readonly type="text" label="Токен" outlined />
@@ -41,10 +41,10 @@
 					<q-input outlined v-model="dataSourceModel.name" label="Название источника данных" />
 					<q-select outlined v-model="dataSourceModel.type" :options="typesOfDataSources" @update:model-value="createDataSourceModel" label="Тип источника данных" />
 					<div class="q-gutter-y-md" v-if="dataSourceModel.type === 'XLS' || dataSourceModel.type === 'CSV'">
-						<q-file v-if="dataSourceModel.type === 'XLS'" v-model="newDataSourceFilePicker" @update:model-value="dataSourceModel.config = newDataSourceFilePicker.path" clearable outlined label="Выбрать XLS файл" accept=".xls,.xlsx">
+						<q-file v-if="dataSourceModel.type === 'XLS'" v-model="newDataSourceFilePicker" @update:model-value="dataSourceModel.config.pathToFile = newDataSourceFilePicker.path" clearable outlined label="Выбрать XLS файл" accept=".xls,.xlsx">
 							<template #prepend><q-icon name="attach_file" /></template>
 						</q-file>
-						<q-file v-else-if="dataSourceModel.type === 'CSV'" v-model="newDataSourceFilePicker" @update:model-value="dataSourceModel.config = newDataSourceFilePicker.path" clearable outlined label="Выбрать CSV файл" accept=".csv">
+						<q-file v-else-if="dataSourceModel.type === 'CSV'" v-model="newDataSourceFilePicker" @update:model-value="dataSourceModel.config.pathToFile = newDataSourceFilePicker.path" clearable outlined label="Выбрать CSV файл" accept=".csv">
 							<template #prepend><q-icon name="attach_file" /></template>
 						</q-file>
 						<q-input v-model="dataSourceModel.config.pathToFile" readonly type="text" label="Путь к файлу" outlined />
@@ -55,11 +55,11 @@
 						<q-btn label="сгенерировать" color="primary" dense unelevated />
 					</div>
 					<div class="q-gutter-y-md" v-else-if="dataSourceModel.type === 'TCP (Данные)'">
-						<q-input outlined v-model="dataSourceModel.config.port" label="Порт" />
+						<q-input outlined v-model="dataSourceModel.config.port" mask="#####" label="Порт" />
 						<q-input outlined v-model="dataSourceModel.config.mask" label="Маска" />
 					</div>
 					<div class="q-gutter-y-md" v-else-if="dataSourceModel.type === 'TCP (Сквозной)'">
-						<q-input outlined v-model="dataSourceModel.config.port" label="Порт" />
+						<q-input outlined v-model="dataSourceModel.config.port" mask="#####" label="Порт" />
 					</div>
 					<div class="row q-gutter-x-md justify-end">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated /></div>
@@ -84,7 +84,7 @@ let dataSourceModel = ref({ name: '', type: '', config: { } })
 
 let addNewDataSourceForm = ref(false)
 
-let newDataSourceFilePicker = ref()
+let newDataSourceFilePicker = ref({})
 
 onMounted(async () => {
 	dataSources.value = await window.api.invoke('get-data-sources')
@@ -135,7 +135,7 @@ async function saveNewDataSource() {
 		} else {
 			$q.notify({ message: 'Такой источник данных уже существует!', type: 'negative' })
 		}
-		dataSourceModel.value = { name: '', type: '', config: '' }
+		dataSourceModel.value = { name: '', type: '', config: { } }
 		newDataSourceFilePicker.value = { }
 	} else {
 		$q.notify({ message: 'Не все поля указаны!', type: 'negative' })
@@ -144,7 +144,7 @@ async function saveNewDataSource() {
 
 function cancel() {
 	addNewDataSourceForm.value = false
-	dataSourceModel.value = { name: '', type: '', config: '' }
+	dataSourceModel.value = { name: '', type: '', config: { } }
 	newDataSourceFilePicker.value = { }
 }
 </script>

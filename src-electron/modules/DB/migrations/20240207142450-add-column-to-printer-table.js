@@ -12,4 +12,4 @@ module.exports = {
   async down({ context: queryInterface }) {
     await queryInterface.removeColumn('printers', 'is_active')
   }
-};
+}
