@@ -11,10 +11,11 @@ class XlsReader {
 		namesOfVariables.forEach((name) => {
 			map[name] = name
 		})
-		let data ='DATA: ' + (await readXlsxFile(this.pathToFile, { map })).rows.map((row) => {
-			return JSON.stringify(row)
-		})
-		return data
+		// let data ='DATA: ' + (await readXlsxFile(this.pathToFile, { map })).rows.map((row) => {
+		// 	return JSON.stringify(row)
+		// })
+		// return data
+    return (await readXlsxFile(this.pathToFile, { map })).rows
 	}
 }
 

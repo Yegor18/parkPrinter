@@ -37,7 +37,7 @@
 				<div class="text-h6 text-center">Добавить новый источник данных</div>
 			</q-card-section>
 			<q-card-section>
-				<q-form class="col q-gutter-y-md" @submit.prevent @submit="saveNewDataSource" @reset="cancel">
+				<q-form class="col q-gutter-y-md" @submit.prevent>
 					<q-input outlined v-model="dataSourceModel.name" label="Название источника данных" />
 					<q-select outlined v-model="dataSourceModel.type" :options="typesOfDataSources" @update:model-value="createDataSourceModel" label="Тип источника данных" />
 					<div class="q-gutter-y-md" v-if="dataSourceModel.type === 'XLS' || dataSourceModel.type === 'CSV'">
@@ -62,8 +62,8 @@
 						<q-input outlined v-model="dataSourceModel.config.port" mask="#####" label="Порт" />
 					</div>
 					<div class="row q-gutter-x-md justify-end">
-						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated /></div>
-						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated /></div>
+						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="saveNewDataSource" /></div>
+						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="cancel" /></div>
 					</div>
 				</q-form>
 			</q-card-section>
@@ -131,12 +131,12 @@ async function saveNewDataSource() {
 		if (result) {
 			addNewDataSourceForm.value = false
 			dataSources.value = await window.api.invoke('get-data-sources')
+		  dataSourceModel.value = { name: '', type: '', config: { } }
+		  newDataSourceFilePicker.value = { }
 			$q.notify({ message: 'Новый источник данных сохранён!', type: 'positive' })
 		} else {
 			$q.notify({ message: 'Такой источник данных уже существует!', type: 'negative' })
 		}
-		dataSourceModel.value = { name: '', type: '', config: { } }
-		newDataSourceFilePicker.value = { }
 	} else {
 		$q.notify({ message: 'Не все поля указаны!', type: 'negative' })
 	}

@@ -4,27 +4,34 @@ import Printer from '../../DB/models/Printer.js'
 import Driver from '../../DB/models/Driver.js'
 import { unwrap } from '../../helpers.js'
 import equipmentManager from '../../EQUIPMENT/EquipmentManager.js'
+import DataSource from '../../DB/models/DataSource.js'
 
 class PrinterIpc {
 	constructor() {
 		// получение списка принтеров
 		ipcMain.handle('get-printers', async () => {
-			return unwrap(await Printer.findAll({ include: { model: Driver } }))
+			return unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource } ] })).map((printer) => {
+        if (printer.DataSource === null) {
+          printer.DataSource = { message: 'Без источника данных' }
+        }
+        return printer
+      })
 		})
 
 		// добавление нового принтера или изменение существующего
 		ipcMain.handle('save-or-update-printer', async (event, printer) => {
 			let driver = unwrap(await Driver.findOne({ where: { name: printer.driver } }))
-			let existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port } }))
+			let dataSource = unwrap(await DataSource.findOne({ where: { name: printer.dataSource } }))
+			let existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port, data_source_id: dataSource.id } }))
 			if (existingPrinter === null) {
-				let newPrinter = { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port, is_active: false }
+				let newPrinter = { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port, is_active: false, data_source_id: dataSource.id }
 				if (printer.id === '') {
 					await Printer.create(newPrinter)
-					let printerId = unwrap(await Printer.max('id'))
-					equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter)
+					// let printerId = unwrap(await Printer.max('id'))
+					// equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter)
 				} else {
 					await Printer.update(newPrinter, { where: { id: printer.id } })
-					equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter.ipAddress, newPrinter.port)
+					// equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter.ipAddress, newPrinter.port)
 				}
 				return 'printer-created-or-updated'
 			} else {

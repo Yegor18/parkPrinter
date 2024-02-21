@@ -1,6 +1,7 @@
 import DataSource from '../DB/models/DataSource.js'
 import Driver from '../DB/models/Driver.js'
 import Printer from '../DB/models/Printer.js'
+import TypeOfDataSource from '../DB/models/TypeOfDataSource.js'
 import { unwrap } from '../helpers.js'
 import DikaiDriver from './drivers/DikaiDriver.js'
 import EndToEndPrinterDriver from './drivers/EndToEndPrinterDriver.js'
@@ -31,9 +32,11 @@ class EquipmentManager {
         id: printer.id,
 				name: printer.name,
 				isActive: printer.is_active,
-        driver: { }
+        driver: { },
+        dataSource: { }
       }
       castPrinter.driver = this.createDriverModel(printer.Driver.name, printer.ipAddress, printer.port)
+      castPrinter.dataSource = this.createDataSource(JSON.parse(printer.DataSource))
       return castPrinter
     })
     this.castPrinters = castPrinters
@@ -71,7 +74,7 @@ class EquipmentManager {
         driverModel = new WindowsDriver(ipAddress, port)
         break
       case 'Файловый принтер':
-        driverModel = new FilePrinterDriver(ipAddress, port)
+        driverModel = new FilePrinterDriver()
         break
       case 'Сквозной TCP принтер':
         driverModel = new EndToEndPrinterDriver(ipAddress, port)
@@ -91,6 +94,10 @@ class EquipmentManager {
 		}
 		return failedConnections
 	}
+
+  async createDataSource(dataSource) {
+    let dataSources = await DataSource.findAll({ include: { model: TypeOfDataSource } })
+  }
 }
 
 const equipmentManager = new EquipmentManager()

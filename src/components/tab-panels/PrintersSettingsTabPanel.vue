@@ -4,6 +4,8 @@
 			<q-item-section no-wrap>
 				<q-item-label class="text-uppercase" header>{{ printer.name }}</q-item-label>
 				<q-item-label class="text-body1">Драйвер: {{ printer.Driver.name }} IP адрес: {{ printer.ipAddress }} Порт: {{ printer.port }}</q-item-label>
+        <q-item-label v-if="printer.DataSource.message" class="text-body1">Источник данных: {{ printer.DataSource.message }}</q-item-label>
+        <q-item-label v-else class="text-body1">Источник данных: {{ printer.DataSource.name }}</q-item-label>
 			</q-item-section>
 			<q-item-section side>
 				<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeletePrinterForm(printer)" />
@@ -31,8 +33,9 @@
 				<q-form class="col q-gutter-y-md" @submit.prevent>
 					<q-input outlined v-model="printerModel.name" label="Название принтера" />
 					<q-select outlined v-model="printerModel.driver" :options="drivers" label="Драйвер принтера" />
-					<q-input outlined v-model="printerModel.ipAddress" mask="###.###.###.###" label="IP адрес" />
+					<q-input outlined v-model="printerModel.ipAddress" label="IP адрес" />
 					<q-input outlined v-model="printerModel.port" mask="#####" label="Порт" />
+					<q-select outlined v-model="printerModel.dataSource" :options="dataSources" label="Источник данных" />
 					<div class="row q-gutter-x-md">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="savePrinter" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="closeSaveOrUpdatePrinterForm" /></div>
@@ -50,8 +53,7 @@
 				<div class="text-h6 text-center">Удалить принтер</div>
 			</q-card-section>
 			<q-card-section>
-				<div class="text-center text-body1">Вы действительно хотите удалить принтер <span class="text-uppercase">{{
-					printerForDeletion.name }}</span>?</div>
+				<div class="text-center text-body1">Вы действительно хотите удалить принтер <span class="text-uppercase">{{ printerForDeletion.name }}</span>?</div>
 			</q-card-section>
 			<q-card-actions horizontal align="center">
 				<q-btn label="да" type="submit" color="negative" dense unelevated @click="deletePrinter(printerForDeletion.id)" />
@@ -69,40 +71,47 @@ const $q = useQuasar()
 
 let printers = ref()
 let drivers = ref()
+let dataSources = ref()
 
 let deletePrinterForm = ref(false)
 let printerForDeletion = ref()
 
 let saveOrUpdatePrinterForm = ref(false)
 let titleForSaveOrUpdatePrinterForm = ref()
-let printerModel = ref({ id: '', name: '', driver: '', ipAddress: '', port: '' })
+let printerModel = ref({ id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '' })
 
 let forSpinner = ref(false)
 
 onMounted(async () => {
 	printers.value = await window.api.invoke('get-printers')
 	drivers.value = await window.api.invoke('get-drivers')
+  dataSources.value = (await window.api.invoke('get-data-sources')).map((dataSource) => { return dataSource.name })
 })
 
 function openSaveOrUpdatePrinterForm(printer) {
 	titleForSaveOrUpdatePrinterForm.value = 'Изменить настройки принтера ' + printer.name
 	saveOrUpdatePrinterForm.value = true
-	printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port }
+  if (printer.DataSource.message) {
+	  printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: '' }
+  } else {
+	  printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: printer.DataSource.name }
+  }
 }
 
 function closeSaveOrUpdatePrinterForm() {
-	printerModel.value = { id: '', name: '', driver: '', ipAddress: '', port: '' }
+	printerModel.value = { id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '' }
 	saveOrUpdatePrinterForm.value = false
 }
 
 async function savePrinter() {
-	if (printerModel.value.name !== '' && printerModel.value.driver !== '' && printerModel.value.ipAddress !== '' && printerModel.value.port !== '') {
+	if (printerModel.value.name !== '' && printerModel.value.driver !== '' && printerModel.value.ipAddress !== '' && printerModel.value.port !== '' && printerModel.value.dataSource !== '') {
 		let result = await window.api.invoke('save-or-update-printer', {
 			id: printerModel.value.id,
 			name: printerModel.value.name,
 			driver: printerModel.value.driver,
 			ipAddress: printerModel.value.ipAddress,
-			port: printerModel.value.port
+			port: printerModel.value.port,
+      dataSource: printerModel.value.dataSource
 		})
 		if (result === 'printer-created-or-updated') {
 			closeSaveOrUpdatePrinterForm()
