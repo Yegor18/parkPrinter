@@ -141,7 +141,6 @@ async function testConnection(printerIpAddress) {
 	if (printerIpAddress !== '') {
 		forSpinner.value = true
 		let result = await window.api.invoke('test-connection', printerIpAddress)
-		console.log(result)
 		if (result) {
 			$q.notify({ message: 'Подключение установлено!', type: 'positive' })
 		} else {

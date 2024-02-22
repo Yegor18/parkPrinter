@@ -57,7 +57,10 @@ class PrinterIpc {
 			if (operation === 'on') {
 				if (!driverModel.check() && await driverModel.start()) {
 					await Printer.update({ is_active: true }, { where: { id: printerId } })
-					equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).isActive = true
+          equipmentManager.castPrinters[equipmentManager.castPrinters.indexOf(
+            equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId)
+          )].isActive = true
+          console.log(equipmentManager.castPrinters)
 					return { type: 'ok-on', message: 'Подключение установлено!' }
 				} else {
 					return { type: 'error-on', message: 'Не удалось подключиться!' }
@@ -65,7 +68,10 @@ class PrinterIpc {
 			} else if (operation === 'off') {
 				if (driverModel.check() && driverModel.stop()) {
 					await Printer.update({ is_active: false }, { where: { id: printerId } })
-					equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).isActive = false
+					equipmentManager.castPrinters[equipmentManager.castPrinters.indexOf(
+            equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId)
+          )].isActive = false
+          console.log(equipmentManager.castPrinters)
 					return { type: 'ok-off', message: 'Отключение выполнить удалось!' }
 				} else {
 					return { type: 'error-off', message: 'Возникла ошибка, проверьте все подключения!' }

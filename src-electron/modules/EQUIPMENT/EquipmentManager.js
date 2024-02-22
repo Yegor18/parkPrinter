@@ -25,8 +25,7 @@ class EquipmentManager {
   }
 
   async createCastPrinters() {
-    let printers = []
-		printers = unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource } ] }))
+    let printers = unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource } ] }))
     let castPrinters = printers.map((printer) => {
       let castPrinter = {
         id: printer.id,
@@ -36,7 +35,7 @@ class EquipmentManager {
         dataSource: { }
       }
       castPrinter.driver = this.createDriverModel(printer.Driver.name, printer.ipAddress, printer.port)
-      castPrinter.dataSource = this.createDataSource(JSON.parse(printer.DataSource))
+      castPrinter.dataSource = this.createDataSource(printer.DataSource)
       return castPrinter
     })
     this.castPrinters = castPrinters
@@ -74,7 +73,7 @@ class EquipmentManager {
         driverModel = new WindowsDriver(ipAddress, port)
         break
       case 'Файловый принтер':
-        driverModel = new FilePrinterDriver()
+        driverModel = new FilePrinterDriver(ipAddress, port)
         break
       case 'Сквозной TCP принтер':
         driverModel = new EndToEndPrinterDriver(ipAddress, port)
@@ -96,7 +95,13 @@ class EquipmentManager {
 	}
 
   async createDataSource(dataSource) {
-    let dataSources = await DataSource.findAll({ include: { model: TypeOfDataSource } })
+    if (dataSource !== null) {
+      let typeNameOfDataSource = await TypeOfDataSource.findOne({ where: { id: dataSource.id } })
+      switch (typeNameOfDataSource) {
+        case '':
+          break
+      }
+    }
   }
 }
 

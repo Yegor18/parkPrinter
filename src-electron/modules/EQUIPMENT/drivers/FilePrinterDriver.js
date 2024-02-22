@@ -2,7 +2,8 @@ import Equipment from './Equipment.js'
 import fs from 'fs'
 
 export default class FilePrinterDriver extends Equipment {
-  constructor() {
+  constructor(ipAddress, port) {
+    super(ipAddress, port)
   }
 
   start() {

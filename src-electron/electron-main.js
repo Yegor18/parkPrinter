@@ -11,7 +11,7 @@ import * as ipc from './modules/IPC/all-ipc.js'
 umzug.up().then(() => {
   
   // работа модуля с оборудованием
-  // equipmentManager.start()
+  equipmentManager.start()
 })
 
 // needed in case process is undefined under Linux
