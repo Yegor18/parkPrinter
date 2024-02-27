@@ -118,7 +118,7 @@ async function savePrinter() {
 			printers.value = await window.api.invoke('get-printers')
 			$q.notify({ message: 'Принтер сохранён!', type: 'positive' })
 		} else {
-			$q.notify({ message: 'Такой принтер уже существует!', type: 'negative' })
+			$q.notify({ message: 'Принтер с такими IP-адресом и портом уже существует!', type: 'negative' })
 		}
 	} else {
 		$q.notify({ message: 'Не все поля указаны!', type: 'negative' })

@@ -19,11 +19,11 @@ export default class FilePrinterDriver extends Equipment {
   }
 
   write(data) {
-    for (let row of data) {
-      let str = `Код: ${row.code}, Дата: ${row.date}, Продукт: ${row.product}`
-      fs.appendFile('C:\\Users\\пользователь\\Downloads\\test.txt', str, (error) => {
-        console.log(error)
-      })
-    }
+    let str = `Код: ${data.code}, Дата: ${data.date}, Продукт: ${data.product}\n`
+    fs.appendFile('C:\\Users\\mixai\\Downloads\\ТЕСТОВЫЕ ИСТОЧНИКИ ДАННЫХ\\forWriting.txt', str, (error) => {
+			if (error) {
+				console.log(error)
+			}
+    })
   }
 }

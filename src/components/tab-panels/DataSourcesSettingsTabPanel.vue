@@ -80,7 +80,7 @@ const $q = useQuasar()
 let dataSources = ref()
 let typesOfDataSources = ref()
 
-let dataSourceModel = ref({ name: '', type: '', config: { } })
+let dataSourceModel = ref({ name: '', type: '', config: {} })
 
 let addNewDataSourceForm = ref(false)
 
@@ -111,7 +111,7 @@ function createDataSourceModel() {
 
 async function saveNewDataSource() {
 	if (dataSourceModel.value.name !== '' && dataSourceModel.value.type !== '' && dataSourceModel.value.config !== null) {
-		let config = { }
+		let config = {}
 		switch (dataSourceModel.value.type) {
 			case 'CSV':
 			case 'XLS':
@@ -131,8 +131,8 @@ async function saveNewDataSource() {
 		if (result) {
 			addNewDataSourceForm.value = false
 			dataSources.value = await window.api.invoke('get-data-sources')
-		  dataSourceModel.value = { name: '', type: '', config: { } }
-		  newDataSourceFilePicker.value = { }
+		  dataSourceModel.value = { name: '', type: '', config: {} }
+		  newDataSourceFilePicker.value = {}
 			$q.notify({ message: 'Новый источник данных сохранён!', type: 'positive' })
 		} else {
 			$q.notify({ message: 'Такой источник данных уже существует!', type: 'negative' })
@@ -144,7 +144,7 @@ async function saveNewDataSource() {
 
 function cancel() {
 	addNewDataSourceForm.value = false
-	dataSourceModel.value = { name: '', type: '', config: { } }
-	newDataSourceFilePicker.value = { }
+	dataSourceModel.value = { name: '', type: '', config: {} }
+	newDataSourceFilePicker.value = {}
 }
 </script>

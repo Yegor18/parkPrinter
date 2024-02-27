@@ -42,7 +42,7 @@ export default class Equipment {
 
 	write(data) {
 		try {
-			this.connection.write(data)
+			this.connection.write(JSON.stringify(data) + '\n')
 			return true
 		} catch (error) {
 			console.log(error)

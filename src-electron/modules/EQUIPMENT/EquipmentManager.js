@@ -1,7 +1,7 @@
+import dataSourceManager from '../DATA_SOURCES/DataSourceManager.js'
 import DataSource from '../DB/models/DataSource.js'
 import Driver from '../DB/models/Driver.js'
 import Printer from '../DB/models/Printer.js'
-import TypeOfDataSource from '../DB/models/TypeOfDataSource.js'
 import { unwrap } from '../helpers.js'
 import DikaiDriver from './drivers/DikaiDriver.js'
 import EndToEndPrinterDriver from './drivers/EndToEndPrinterDriver.js'
@@ -16,12 +16,12 @@ class EquipmentManager {
 
   async start() {
     await this.createCastPrinters()
-    for (let i = 0; i < this.castPrinters.length; i++) {
-      const printer = this.castPrinters[i]
-      if (printer.isActive) {
-        await printer.driver.start()
+    for (let castPrinter of this.castPrinters) {
+      if (castPrinter.isActive) {
+        await castPrinter.driver.start()
       }
     }
+		await dataSourceManager.createCastDataSources(this.castPrinters)
   }
 
   async createCastPrinters() {
@@ -31,11 +31,10 @@ class EquipmentManager {
         id: printer.id,
 				name: printer.name,
 				isActive: printer.is_active,
-        driver: { },
-        dataSource: { }
+				dataSourceId: printer.DataSource.id,
+        driver: {}
       }
       castPrinter.driver = this.createDriverModel(printer.Driver.name, printer.ipAddress, printer.port)
-      castPrinter.dataSource = this.createDataSource(printer.DataSource)
       return castPrinter
     })
     this.castPrinters = castPrinters
@@ -60,7 +59,7 @@ class EquipmentManager {
     this.castPrinters = this.castPrinters.filter((castPrinter) => castPrinter.id !== printerId)
 	}
 
-  createDriverModel(driverName, ipAddress, port, dataSource) {
+  createDriverModel(driverName, ipAddress, port) {
     let driverModel
     switch (driverName) {
       case 'logopack':
@@ -93,16 +92,6 @@ class EquipmentManager {
 		}
 		return failedConnections
 	}
-
-  async createDataSource(dataSource) {
-    if (dataSource !== null) {
-      let typeNameOfDataSource = await TypeOfDataSource.findOne({ where: { id: dataSource.id } })
-      switch (typeNameOfDataSource) {
-        case '':
-          break
-      }
-    }
-  }
 }
 
 const equipmentManager = new EquipmentManager()
