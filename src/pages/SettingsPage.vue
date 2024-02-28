@@ -9,15 +9,15 @@
 
 		<q-tab-panels class="fit row wrap justify-start items-start content-start" v-model="tab">
 			<q-tab-panel name="main-settings">
-				<MainSettingsTabPanel class="col" />
+				<MainSettingsTabPanel />
 			</q-tab-panel>
 
 			<q-tab-panel name="printers-settings">
-				<PrintersSettingsTabPanel class="col" />
+				<PrintersSettingsTabPanel />
 			</q-tab-panel>
 
       <q-tab-panel name="data-sources-settings">
-        <DataSourcesSettingsTabPanel class="col" />
+        <DataSourcesSettingsTabPanel />
       </q-tab-panel>
 		</q-tab-panels>
 

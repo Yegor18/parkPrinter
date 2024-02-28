@@ -10,7 +10,9 @@ Printer.init({
 	driver_id: DataTypes.INTEGER,
 	ipAddress: DataTypes.STRING,
 	port: DataTypes.STRING,
-  is_active: DataTypes.BOOLEAN
+  is_active: DataTypes.BOOLEAN,
+  data_source_id: DataTypes.INTEGER,
+  config: DataTypes.STRING(1000)
 }, {
 	sequelize,
 	modelName: 'Printer',

@@ -34,7 +34,7 @@ class EquipmentManager {
 				dataSourceId: printer.DataSource.id,
         driver: {}
       }
-      castPrinter.driver = this.createDriverModel(printer.Driver.name, printer.ipAddress, printer.port)
+      castPrinter.driver = this.createDriverModel(printer)
       return castPrinter
     })
     this.castPrinters = castPrinters
@@ -59,9 +59,11 @@ class EquipmentManager {
     this.castPrinters = this.castPrinters.filter((castPrinter) => castPrinter.id !== printerId)
 	}
 
-  createDriverModel(driverName, ipAddress, port) {
-    let driverModel
-    switch (driverName) {
+  createDriverModel(printer) {
+    let ipAddress = printer.ipAddress
+    let port = printer.port
+    let driverModel = ''
+    switch (printer.Driver.name) {
       case 'logopack':
         driverModel = new LogopackDriver(ipAddress, port)
         break
@@ -72,10 +74,10 @@ class EquipmentManager {
         driverModel = new WindowsDriver(ipAddress, port)
         break
       case 'Файловый принтер':
-        driverModel = new FilePrinterDriver(ipAddress, port)
+        driverModel = new FilePrinterDriver(ipAddress, port, JSON.parse(printer.config).pathToFile)
         break
       case 'Сквозной TCP принтер':
-        driverModel = new EndToEndPrinterDriver(ipAddress, port)
+        driverModel = new EndToEndPrinterDriver(ipAddress, port, JSON.parse(printer.config).port)
         break
     }
     return driverModel

@@ -6,10 +6,9 @@ class XlsDataSource {
 		this.pollingFrequency = pollingFrequency
 		this.printers = printers
 		setInterval(async () => {
+      let rows = await this.read()
 			for (let printer of printers) {
-				for (let row of await this.read()) {
-					printer.driver.write(row)
-				}
+				printer.driver.write(rows)
 			}
 		}, this.pollingFrequency)
 	}

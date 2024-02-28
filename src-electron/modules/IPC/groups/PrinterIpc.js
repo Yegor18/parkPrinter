@@ -14,6 +14,7 @@ class PrinterIpc {
         if (printer.DataSource === null) {
           printer.DataSource = { message: 'Без источника данных' }
         }
+        printer.config = JSON.parse(printer.config)
         return printer
       })
 		})
@@ -22,9 +23,17 @@ class PrinterIpc {
 		ipcMain.handle('save-or-update-printer', async (event, printer) => {
 			let driver = unwrap(await Driver.findOne({ where: { name: printer.driver } }))
 			let dataSource = unwrap(await DataSource.findOne({ where: { name: printer.dataSource } }))
-			let existingPrinter = unwrap(await Printer.findOne({ where: { ipAddress: printer.ipAddress, port: printer.port } }))
-			if (existingPrinter === null) {
-				let newPrinter = { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port, is_active: false, data_source_id: dataSource.id }
+      let existingPrinter = {}
+      switch (printer.driver) {
+        case 'Файловый принтер':
+        case 'Сквозной TCP принтер':
+          existingPrinter = unwrap(await Printer.findOne({ where: { config: JSON.stringify(printer.config) } }))
+          break
+        default:
+          existingPrinter = unwrap(await Printer.findOne({ where: { ipAddress: printer.ipAddress, port: printer.port } }))
+      }
+			if (existingPrinter === null || existingPrinter.data_source_id === null) {
+				let newPrinter = { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port, is_active: false, data_source_id: dataSource.id, config: JSON.stringify(printer.config) }
 				if (printer.id === '') {
 					await Printer.create(newPrinter)
 					let printerId = unwrap(await Printer.max('id'))

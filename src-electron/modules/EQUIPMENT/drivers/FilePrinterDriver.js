@@ -2,7 +2,8 @@ import Equipment from './Equipment.js'
 import fs from 'fs'
 
 export default class FilePrinterDriver extends Equipment {
-  constructor(ipAddress, port) {
+  constructor(ipAddress, port, pathToFile) {
+    this.pathToFile = pathToFile
     super(ipAddress, port)
   }
 
@@ -19,11 +20,13 @@ export default class FilePrinterDriver extends Equipment {
   }
 
   write(data) {
-    let str = `Код: ${data.code}, Дата: ${data.date}, Продукт: ${data.product}\n`
-    fs.appendFile('C:\\Users\\mixai\\Downloads\\ТЕСТОВЫЕ ИСТОЧНИКИ ДАННЫХ\\forWriting.txt', str, (error) => {
-			if (error) {
-				console.log(error)
-			}
-    })
+    for (let row of data) {
+      let str = `Код: ${row.code}, Дата: ${row.date}, Продукт: ${row.product}\n`
+      fs.appendFile(this.pathToFile, str, (error) => {
+        if (error) {
+          console.log(error)
+        }
+      })
+    }
   }
 }

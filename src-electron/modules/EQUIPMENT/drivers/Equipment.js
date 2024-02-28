@@ -42,7 +42,13 @@ export default class Equipment {
 
 	write(data) {
 		try {
-			this.connection.write(JSON.stringify(data) + '\n')
+      if (Array.isArray(data)) {
+        for (let row of data) {
+          this.connection.write(row + '\n')
+        }
+      } else {
+        this.connection.write(data + '\n')
+      }
 			return true
 		} catch (error) {
 			console.log(error)
