@@ -74,10 +74,10 @@ class EquipmentManager {
         driverModel = new WindowsDriver(ipAddress, port)
         break
       case 'Файловый принтер':
-        driverModel = new FilePrinterDriver(ipAddress, port, JSON.parse(printer.config).pathToFile)
+        driverModel = new FilePrinterDriver(JSON.parse(printer.config).pathToFile)
         break
       case 'Сквозной TCP принтер':
-        driverModel = new EndToEndPrinterDriver(ipAddress, port, JSON.parse(printer.config).port)
+        driverModel = new EndToEndPrinterDriver(JSON.parse(printer.config).port)
         break
     }
     return driverModel

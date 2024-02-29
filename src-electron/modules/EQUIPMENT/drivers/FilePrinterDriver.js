@@ -1,22 +1,23 @@
-import Equipment from './Equipment.js'
 import fs from 'fs'
 
-export default class FilePrinterDriver extends Equipment {
-  constructor(ipAddress, port, pathToFile) {
+export default class FilePrinterDriver {
+  constructor(pathToFile) {
     this.pathToFile = pathToFile
-    super(ipAddress, port)
+    this.isStarted = false
   }
 
   start() {
+    this.isStarted = true
     return true
   }
 
   stop() {
+    this.isStarted = false
     return true
   }
 
   check() {
-    return true
+    return this.isStarted
   }
 
   write(data) {

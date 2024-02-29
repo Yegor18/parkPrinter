@@ -2,8 +2,9 @@ import net from 'node:net'
 import Equipment from './Equipment.js'
 
 export default class EndToEndPrinterDriver extends Equipment {
-  constructor(ipAddress, port) {
-		let defaultPort = 8190
+  constructor(port) {
+    super('localhost', port)
+    this.port = port
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
@@ -13,15 +14,14 @@ export default class EndToEndPrinterDriver extends Equipment {
 				console.log(`ON PORT: ${error}`)
 			})
 		})
-		server.listen(defaultPort, () => {
-			console.log(`SERVER STARTED ON ${defaultPort} PORT`)
+		server.listen(this.port, () => {
+			console.log(`SERVER STARTED ON ${this.port} PORT`)
 			server.on('connection', () => {
-				console.log(`CLIENT CONNECTED TO ${defaultPort} PORT`)
+				console.log(`CLIENT CONNECTED TO ${this.port} PORT`)
 			})
 			server.on('error', (error) => {
 				console.log(error)
 			})
 		})
-    super('localhost', defaultPort)
   }
 }

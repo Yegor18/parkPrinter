@@ -44,7 +44,7 @@ export default class Equipment {
 		try {
       if (Array.isArray(data)) {
         for (let row of data) {
-          this.connection.write(row + '\n')
+          this.connection.write(JSON.stringify(row) + '\n')
         }
       } else {
         this.connection.write(data + '\n')
