@@ -22,8 +22,8 @@ export default class FilePrinterDriver {
 
   write(data) {
     for (let row of data) {
-      let str = `Код: ${row.code}, Дата: ${row.date}, Продукт: ${row.product}\n`
-      fs.appendFile(this.pathToFile, str, (error) => {
+      // let str = `Код: ${row.code}, Дата: ${row.date}, Продукт: ${row.product}\n`
+      fs.appendFile(this.pathToFile, row, (error) => {
         if (error) {
           console.log(error)
         }

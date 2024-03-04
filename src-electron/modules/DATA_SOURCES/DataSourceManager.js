@@ -7,9 +7,13 @@ import EndToEndTcpDataSource from './readers/EndToEndTcpDataSource'
 import XlsDataSource from './readers/XlsDataSource.js'
 
 class DataSourceManager {
+	constructor() {
+		this.castDataSources = []
+	}
+
 	async createCastDataSources(printers) {
 		let dataSources = unwrap(await DataSource.findAll({ include: { model: TypeOfDataSource } }))
-		let castDataSources = dataSources.map((dataSource) => {
+		this.castDataSources = dataSources.map((dataSource) => {
 			let castDataSource = {
 				id: dataSource.id,
 				typeName: dataSource.TypeOfDataSource.name,
@@ -32,6 +36,10 @@ class DataSourceManager {
           break
 			}
 		})
+	}
+
+	addCastDataSource() {
+		
 	}
 }
 

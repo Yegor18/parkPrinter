@@ -11,7 +11,10 @@ Printer.init({
 	ipAddress: DataTypes.STRING,
 	port: DataTypes.STRING,
   is_active: DataTypes.BOOLEAN,
-  data_source_id: DataTypes.INTEGER,
+  data_source_id: {
+		type: DataTypes.INTEGER,
+		allowNull: true
+	},
   config: DataTypes.STRING(1000)
 }, {
 	sequelize,

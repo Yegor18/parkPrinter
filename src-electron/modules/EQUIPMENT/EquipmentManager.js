@@ -27,60 +27,73 @@ class EquipmentManager {
   async createCastPrinters() {
     let printers = unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource } ] }))
     let castPrinters = printers.map((printer) => {
-      let castPrinter = {
-        id: printer.id,
+			let castPrinter = {
+				id: printer.id,
 				name: printer.name,
 				isActive: printer.is_active,
-				dataSourceId: printer.DataSource.id,
-        driver: {}
-      }
-      castPrinter.driver = this.createDriverModel(printer)
-      return castPrinter
+				dataSourceId: '',
+				driver: {}
+			}
+      castPrinter.driver = this.createDriver(printer.Driver.name, printer)
+			if (printer.DataSource !== null) {
+				castPrinter.dataSourceId = printer.DataSource.id
+			}
+			return castPrinter
     })
     this.castPrinters = castPrinters
+		console.log('=== AT START ===')
+		console.log(this.castPrinters)
   }
 
-	updateCastPrinter(printerId, newDriverName, ipAddress, port) {
-    let driverModel = this.createDriverModel(newDriverName, ipAddress, port)
+	updateCastPrinter(printerId, newDriverName, updatedPrinter) {
+    let newDriver = this.createDriver(newDriverName, updatedPrinter)
 		for (let i = 0; i < this.castPrinters.length; i++) {
       if (this.castPrinters[i].id === printerId) {
 				this.castPrinters[i].isActive = false
-        this.castPrinters[i].driver = driverModel
+        this.castPrinters[i].driver = newDriver
+				this.castPrinters[i].dataSourceId = updatedPrinter.data_source_id
       }
     }
+		console.log(`=== AFTER UPDATE ${printerId} ===`)
+		console.log(this.castPrinters)
 	}
 
 	addCastPrinter(printerId, driverName, newPrinter) {
-		let driverModel = this.createDriverModel(driverName, newPrinter.ipAddress, newPrinter.port)
-    this.castPrinters.push({ id: printerId, isActive: false, driver: driverModel })
+		let driver = this.createDriver(driverName, newPrinter)
+    this.castPrinters.push({ id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver })
+		console.log(`=== AFTER ADD ${printerId} ===`)
+		console.log(this.castPrinters)
 	}
 
 	deleteCastPrinter(printerId) {
     this.castPrinters = this.castPrinters.filter((castPrinter) => castPrinter.id !== printerId)
+		console.log(`=== AFTER DELETE ${printerId} ===`)
+		console.log(this.castPrinters)
 	}
 
-  createDriverModel(printer) {
+  createDriver(driverName, printer) {
     let ipAddress = printer.ipAddress
     let port = printer.port
-    let driverModel = ''
-    switch (printer.Driver.name) {
+		let config = JSON.parse(printer.config)
+    let driver = {}
+    switch (driverName) {
       case 'logopack':
-        driverModel = new LogopackDriver(ipAddress, port)
+        driver = new LogopackDriver(ipAddress, port)
         break
       case 'dikai':
-        driverModel = new DikaiDriver(ipAddress, port)
+        driver = new DikaiDriver(ipAddress, port)
         break
       case 'windows':
-        driverModel = new WindowsDriver(ipAddress, port)
+        driver = new WindowsDriver(ipAddress, port)
         break
       case 'Файловый принтер':
-        driverModel = new FilePrinterDriver(JSON.parse(printer.config).pathToFile)
+        driver = new FilePrinterDriver(config.pathToFile)
         break
       case 'Сквозной TCP принтер':
-        driverModel = new EndToEndPrinterDriver(JSON.parse(printer.config).port)
+        driver = new EndToEndPrinterDriver(config.port)
         break
     }
-    return driverModel
+    return driver
   }
 
 	async checkAllConnections() {
