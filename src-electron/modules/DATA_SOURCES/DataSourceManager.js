@@ -14,32 +14,32 @@ class DataSourceManager {
 	async createCastDataSources(printers) {
 		let dataSources = unwrap(await DataSource.findAll({ include: { model: TypeOfDataSource } }))
 		this.castDataSources = dataSources.map((dataSource) => {
-			let castDataSource = {
-				id: dataSource.id,
-				typeName: dataSource.TypeOfDataSource.name,
-				config: {}
-			}
+			let castDataSource = { id: dataSource.id, typeName: dataSource.TypeOfDataSource.name, config: {} }
 			let printersBelongingToDataSource = printers.filter((printer) => printer.dataSourceId === dataSource.id)
-      let dataSourceConfig = JSON.parse(dataSource.config)
-			switch (dataSource.TypeOfDataSource.name) {
-				case 'XLS':
-					castDataSource.config = new XlsDataSource(dataSourceConfig.pathToFile, dataSourceConfig.pollingFrequency, printersBelongingToDataSource)
-          break
-        case 'CSV':
-					castDataSource.config = new CsvDataSource(dataSourceConfig.pathToFile, dataSourceConfig.pollingFrequency, printersBelongingToDataSource)
-					break
-        case 'TCP (Данные)':
-          castDataSource.config = new DataTcpDataSource(dataSourceConfig.port, dataSourceConfig.mask, printersBelongingToDataSource)
-          break
-        case 'TCP (Сквозной)':
-          castDataSource.config = new EndToEndTcpDataSource(dataSourceConfig.port, printersBelongingToDataSource)
-          break
-			}
+			castDataSource.config = this.createDataSourceConfig(dataSource.TypeOfDataSource.name, JSON.parse(dataSource.config), printersBelongingToDataSource)
+			return castDataSource
 		})
 	}
 
-	addCastDataSource() {
-		
+	addCastDataSource(dataSourceId, typeName, dataSourceConfig) {
+		this.castDataSources.push({ id: dataSourceId, typeName: typeName, config: this.createDataSourceConfig(typeName, dataSourceConfig, []) })
+	}
+
+	createDataSourceConfig(typeName, dataSourceConfig, printersBelongingToDataSource) {
+		switch (typeName) {
+			case 'XLS':
+				return new XlsDataSource(dataSourceConfig.pathToFile, dataSourceConfig.pollingFrequency, printersBelongingToDataSource)
+			case 'CSV':
+				return new CsvDataSource(dataSourceConfig.pathToFile, dataSourceConfig.pollingFrequency, printersBelongingToDataSource)
+			case 'TCP (Данные)':
+				return new DataTcpDataSource(dataSourceConfig.port, dataSourceConfig.mask, printersBelongingToDataSource)
+			case 'TCP (Сквозной)':
+				return new EndToEndTcpDataSource(dataSourceConfig.port, printersBelongingToDataSource)
+		}
+	}
+
+	updatePrintersInDataSource(printer, operation) {
+		this.castDataSources.find((castDataSource) => castDataSource.id === printer.dataSourceId).config.updateListPrinters(printer, operation)
 	}
 }
 

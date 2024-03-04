@@ -1,11 +1,12 @@
 import fs from 'fs'
 import CsvReadableStream from 'csv-reader'
+import DataSource from './DataSource.js'
 
-class CsvDataSource {
+class CsvDataSource extends DataSource {
   constructor(pathToFile, pollingFrequency, printers) {
+    super(printers)
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
-		this.printers = printers
     this.rows = []
     let inputStream = fs.createReadStream(this.pathToFile, 'utf8')
     let csvReadableStream = new CsvReadableStream()

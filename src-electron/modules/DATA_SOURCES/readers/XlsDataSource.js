@@ -1,10 +1,11 @@
 import readXlsxFile from 'read-excel-file/node'
+import DataSource from './DataSource.js'
 
-class XlsDataSource {
+class XlsDataSource extends DataSource {
 	constructor(pathToFile, pollingFrequency, printers) {
+    super(printers)
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
-		this.printers = printers
 		setInterval(async () => {
       let rows = await this.read()
 			for (let printer of printers) {

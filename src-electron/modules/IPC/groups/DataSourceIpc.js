@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import DataSource from '../../DB/models/DataSource.js'
 import TypeOfDataSource from '../../DB/models/TypeOfDataSource.js'
 import { unwrap } from '../../helpers.js'
+import dataSourceManager from '../../DATA_SOURCES/DataSourceManager.js'
 
 class DataSourceIpc {
   constructor() {
@@ -27,6 +28,8 @@ class DataSourceIpc {
 			let existingDataSource = unwrap(await DataSource.findOne({ where: { name: newDataSource.name, type_id: typeId, config: configString } }))
 			if (existingDataSource === null) {
 				await DataSource.create({ name: newDataSource.name, type_id: typeId, config: configString })
+				let dataSourceId = unwrap(await DataSource.max('id'))
+				dataSourceManager.addCastDataSource(dataSourceId, newDataSource.type, newDataSource.config)
 				return true
 			} else {
 				return false

@@ -1,10 +1,11 @@
 import net from 'node:net'
+import DataSource from './DataSource.js'
 
-class DataTcpDataSource {
+class DataTcpDataSource extends DataSource {
   constructor(port, mask, printers) {
+    super(printers)
     this.port = port
     this.mask = mask
-		this.printers = printers
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
