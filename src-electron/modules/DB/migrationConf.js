@@ -15,7 +15,10 @@ const umzug = new Umzug({
 		require('./seeders/20240216090424-types-of-data-sources.js'),
     require('./migrations/20240220080557-add-column-to-printer-table.js'),
     require('./seeders/20240220083617-add-file-tcp-drivers.js'),
-    require('./migrations/20240227113713-add-column-to-printer-table.js')
+    require('./migrations/20240227113713-add-column-to-printer-table.js'),
+    require('./migrations/20240305075813-create-template.js'),
+    require('./seeders/20240305082658-example-template.js'),
+    require('./migrations/20240305081851-add-column-to-printer-table.js')
   ],
   context: sequelize.getQueryInterface(),
   storage: new SequelizeStorage({ sequelize }),

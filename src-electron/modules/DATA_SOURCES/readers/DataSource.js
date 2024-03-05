@@ -1,7 +1,6 @@
 class DataSource {
   constructor(printers) {
     this.printers = printers
-    console.log(this.printers)
   }
 
   updateListPrinters(printer, operation) {
@@ -12,18 +11,14 @@ class DataSource {
             this.printers[i] = printer
           }
         }
-        console.log(`=== AFTER UPDATE ${printer.id} ===`)
         break
       case 'add':
         this.printers.push(printer)
-        console.log(`=== AFTER ADD ${printer.id} ===`)
         break
       case 'delete':
         this.printers = this.printers.filter((printerInArray) => printerInArray.id !== printer.id)
-        console.log(`=== AFTER DELETE ${printer.id} ===`)
         break
     }
-    console.log(this.printers)
   }
 }
 
