@@ -5,7 +5,7 @@ class Template extends Model { }
 
 Template.init({
   name: DataTypes.STRING,
-  tamplate: DataTypes.STRING(5000)
+  template: DataTypes.STRING(5000)
 }, {
   sequelize,
   modelName: 'Template',

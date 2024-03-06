@@ -3,11 +3,13 @@
 		<q-item v-for="printer in printers" :key="printer.id">
 			<q-item-section no-wrap>
 				<q-item-label class="text-uppercase" header>{{ printer.name }}</q-item-label>
-				<q-item-label v-if="printer.Driver.name === 'Файловый принтер'" class="text-body1">Драйвер: {{ printer.Driver.name }} Путь к TXT файлу для записи: {{ printer.config.pathToFile }}</q-item-label>
-				<q-item-label v-else-if="printer.Driver.name === 'Сквозной TCP принтер'" class="text-body1">Драйвер: {{ printer.Driver.name }} Порт: {{ printer.config.port }}</q-item-label>
-				<q-item-label v-else class="text-body1">Драйвер: {{ printer.Driver.name }} IP адрес: {{ printer.ipAddress }} Порт: {{ printer.port }}</q-item-label>
+				<q-item-label class="text-body1">Драйвер: {{ printer.Driver.name }}</q-item-label>
+				<q-item-label v-if="printer.Driver.name === 'Файловый принтер'" class="text-body1">Путь к TXT файлу для записи: {{ printer.config.pathToFile }}</q-item-label>
+				<q-item-label v-else-if="printer.Driver.name === 'Сквозной TCP принтер'" class="text-body1">Порт: {{ printer.config.port }}</q-item-label>
+				<q-item-label v-else class="text-body1">IP адрес: {{ printer.ipAddress }} Порт: {{ printer.port }}</q-item-label>
         <q-item-label v-if="printer.DataSource.message" class="text-body1">Источник данных: {{ printer.DataSource.message }}</q-item-label>
         <q-item-label v-else class="text-body1">Источник данных: {{ printer.DataSource.name }}</q-item-label>
+				<q-item-label class="text-body1">Шаблон: {{ printer.Template.name }}</q-item-label>
 			</q-item-section>
 			<q-item-section side>
 				<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeletePrinterForm(printer)" />
@@ -49,10 +51,11 @@
 					  <q-input outlined v-model="printerModel.port" mask="#####" label="Порт" />
           </div>
 					<q-select outlined v-model="printerModel.dataSource" :options="dataSources" label="Источник данных" />
+					<q-select outlined v-model="printerModel.template" :options="templates" label="Шаблон" />
 					<div class="row q-gutter-x-md">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="savePrinter" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="closeSaveOrUpdatePrinterForm" /></div>
-						<div v-if="printerModel.driver !== 'Файловый принтер' || printerModel.driver !== 'Сквозной TCP принтер'" class="col-auto"><q-btn label="проверить подключение" color="primary" dense unelevated @click="testConnection(printerModel.ipAddress)" /></div>
+						<div class="col-auto"><q-btn label="проверить подключение" color="primary" dense unelevated @click="testConnection(printerModel.ipAddress)" /></div>
 					</div>
 					<q-spinner-radio v-if="forSpinner" color="primary" size="2em" />
 				</q-form>
@@ -85,13 +88,14 @@ const $q = useQuasar()
 let printers = ref()
 let drivers = ref()
 let dataSources = ref()
+let templates = ref()
 
 let deletePrinterForm = ref(false)
 let printerForDeletion = ref()
 
 let saveOrUpdatePrinterForm = ref(false)
 let titleForSaveOrUpdatePrinterForm = ref()
-let printerModel = ref({ id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '', config: {} })
+let printerModel = ref({ id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '', config: {}, template: '' })
 
 let forSpinner = ref(false)
 
@@ -101,6 +105,7 @@ onMounted(async () => {
 	printers.value = await window.api.invoke('get-printers')
 	drivers.value = await window.api.invoke('get-drivers')
   dataSources.value = (await window.api.invoke('get-data-sources')).map((dataSource) => { return dataSource.name })
+	templates.value = await window.api.invoke('get-templates')
 })
 
 function changeConfig() {
@@ -128,9 +133,9 @@ function openSaveOrUpdatePrinterForm(printer, operation) {
     case 'edit-printer':
       titleForSaveOrUpdatePrinterForm.value = 'Изменить настройки принтера ' + printer.name
       if (printer.DataSource.message) {
-        printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: '', config: printer.config }
+        printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: '', config: printer.config, template: printer.Template.name }
       } else {
-        printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: printer.DataSource.name, config: printer.config }
+        printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: printer.DataSource.name, config: printer.config, template: printer.Template.name }
       }
       break
     case 'add-printer':
@@ -141,13 +146,13 @@ function openSaveOrUpdatePrinterForm(printer, operation) {
 }
 
 function closeSaveOrUpdatePrinterForm() {
-	printerModel.value = { id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '', config: {} }
+	printerModel.value = { id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '', config: {}, template: '' }
   fileForWritingFilePicker.value = {}
 	saveOrUpdatePrinterForm.value = false
 }
 
 async function savePrinter() {
-  let newPrinter = { id: printerModel.value.id, name: printerModel.value.name, driver: printerModel.value.driver, ipAddress: printerModel.value.ipAddress, port: printerModel.value.port, dataSource: printerModel.value.dataSource, config: printerModel.value.config }
+  let newPrinter = { id: printerModel.value.id, name: printerModel.value.name, driver: printerModel.value.driver, ipAddress: printerModel.value.ipAddress, port: printerModel.value.port, dataSource: printerModel.value.dataSource, config: printerModel.value.config, template: printerModel.value.template }
   switch (printerModel.value.driver) {
     case 'Файловый принтер':
       newPrinter.config = { pathToFile: printerModel.value.config.pathToFile }
@@ -164,7 +169,7 @@ async function savePrinter() {
       newPrinter.ipAddress = printerModel.value.ipAddress
       newPrinter.port = printerModel.value.port
   }
-  if ((newPrinter.name !== '' && newPrinter.driver !== '' && newPrinter.dataSource !== '') && 
+  if ((newPrinter.name !== '' && newPrinter.driver !== '' && newPrinter.dataSource !== '' && newPrinter.template !== '') && 
     ((newPrinter.driver === 'Файловый принтер' && newPrinter.config.pathToFile !== '') ||
     (newPrinter.driver === 'Сквозной TCP принтер' && newPrinter.config.port !== '') ||
     (newPrinter.ipAddress !== '' && newPrinter.port !== ''))) {

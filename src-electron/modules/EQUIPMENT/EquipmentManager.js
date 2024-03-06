@@ -2,6 +2,7 @@ import dataSourceManager from '../DATA_SOURCES/DataSourceManager.js'
 import DataSource from '../DB/models/DataSource.js'
 import Driver from '../DB/models/Driver.js'
 import Printer from '../DB/models/Printer.js'
+import Template from '../DB/models/Template.js'
 import { unwrap } from '../helpers.js'
 import DikaiDriver from './drivers/DikaiDriver.js'
 import EndToEndPrinterDriver from './drivers/EndToEndPrinterDriver.js'
@@ -25,14 +26,15 @@ class EquipmentManager {
   }
 
   async createCastPrinters() {
-    let printers = unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource } ] }))
+    let printers = unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource }, { model: Template } ] }))
     let castPrinters = printers.map((printer) => {
 			let castPrinter = {
 				id: printer.id,
 				name: printer.name,
 				isActive: printer.is_active,
 				dataSourceId: '',
-				driver: {}
+				driver: {},
+        template: printer.Template.template
 			}
       castPrinter.driver = this.createDriver(printer.Driver.name, printer)
 			if (printer.DataSource !== null) {
@@ -43,21 +45,22 @@ class EquipmentManager {
     this.castPrinters = castPrinters
   }
 
-	updateCastPrinter(printerId, newDriverName, updatedPrinter) {
+	updateCastPrinter(printerId, newDriverName, updatedPrinter, newTemplate) {
     let newDriver = this.createDriver(newDriverName, updatedPrinter)
 		for (let i = 0; i < this.castPrinters.length; i++) {
       if (this.castPrinters[i].id === printerId) {
 				this.castPrinters[i].isActive = false
         this.castPrinters[i].driver = newDriver
 				this.castPrinters[i].dataSourceId = updatedPrinter.data_source_id
+        this.castPrinters[i].template = newTemplate
         dataSourceManager.updatePrintersInDataSource(this.castPrinters[i], 'update')
       }
     }
 	}
 
-	addCastPrinter(printerId, driverName, newPrinter) {
+	addCastPrinter(printerId, driverName, newPrinter, newTemplate) {
 		let driver = this.createDriver(driverName, newPrinter)
-    let printer = { id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver }
+    let printer = { id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver, template: newTemplate }
     this.castPrinters.push(printer)
     dataSourceManager.updatePrintersInDataSource(printer, 'add')
 	}

@@ -14,7 +14,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       template: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(5000)
       }
     })
   },
