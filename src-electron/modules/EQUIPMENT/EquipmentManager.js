@@ -36,7 +36,7 @@ class EquipmentManager {
 				driver: {},
         template: printer.Template.template
 			}
-      castPrinter.driver = this.createDriver(printer.Driver.name, printer)
+      castPrinter.driver = this.createDriver(printer.Driver.name, printer, castPrinter.template)
 			if (printer.DataSource !== null) {
 				castPrinter.dataSourceId = printer.DataSource.id
 			}
@@ -46,7 +46,7 @@ class EquipmentManager {
   }
 
 	updateCastPrinter(printerId, newDriverName, updatedPrinter, newTemplate) {
-    let newDriver = this.createDriver(newDriverName, updatedPrinter)
+    let newDriver = this.createDriver(newDriverName, updatedPrinter, newTemplate)
 		for (let i = 0; i < this.castPrinters.length; i++) {
       if (this.castPrinters[i].id === printerId) {
 				this.castPrinters[i].isActive = false
@@ -59,7 +59,7 @@ class EquipmentManager {
 	}
 
 	addCastPrinter(printerId, driverName, newPrinter, newTemplate) {
-		let driver = this.createDriver(driverName, newPrinter)
+		let driver = this.createDriver(driverName, newPrinter, newTemplate)
     let printer = { id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver, template: newTemplate }
     this.castPrinters.push(printer)
     dataSourceManager.updatePrintersInDataSource(printer, 'add')
@@ -84,7 +84,7 @@ class EquipmentManager {
     dataSourceManager.updatePrintersInDataSource(printer, 'update')
   }
 
-  createDriver(driverName, printer) {
+  createDriver(driverName, printer, template) {
     let ipAddress = printer.ipAddress
     let port = printer.port
 		let config = JSON.parse(printer.config)
@@ -96,7 +96,7 @@ class EquipmentManager {
       case 'windows':
         return new WindowsDriver(ipAddress, port)
       case 'Файловый принтер':
-        return new FilePrinterDriver(config.pathToFile)
+        return new FilePrinterDriver(config.pathToFile, template)
       case 'Сквозной TCP принтер':
         return new EndToEndPrinterDriver(config.port)
     }
