@@ -131,8 +131,8 @@ async function saveNewDataSource() {
 		if (result) {
 			addNewDataSourceForm.value = false
 			dataSources.value = await window.api.invoke('get-data-sources')
-		  dataSourceModel.value = { name: '', type: '', config: {} }
-		  newDataSourceFilePicker.value = {}
+			dataSourceModel.value = { name: '', type: '', config: {} }
+			newDataSourceFilePicker.value = {}
 			$q.notify({ message: 'Новый источник данных сохранён!', type: 'positive' })
 		} else {
 			$q.notify({ message: 'Такой источник данных уже существует!', type: 'negative' })

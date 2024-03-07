@@ -2,9 +2,9 @@ import net from 'node:net'
 import Equipment from './Equipment.js'
 
 export default class EndToEndPrinterDriver extends Equipment {
-  constructor(port) {
-    super('localhost', port)
-    this.port = port
+	constructor(port) {
+		super('localhost', port)
+		this.port = port
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
@@ -23,5 +23,5 @@ export default class EndToEndPrinterDriver extends Equipment {
 				console.log(error)
 			})
 		})
-  }
+	}
 }

@@ -5,21 +5,21 @@ import { unwrap } from '../../helpers.js'
 import dataSourceManager from '../../DATA_SOURCES/DataSourceManager.js'
 
 class DataSourceIpc {
-  constructor() {
+	constructor() {
 		// получение списка типов источников данных
 		ipcMain.handle('get-types-of-data-sources', async () => {
-      return unwrap(await TypeOfDataSource.findAll()).map((type) => { return type.name })
-    })
+			return unwrap(await TypeOfDataSource.findAll()).map((type) => { return type.name })
+		})
 
-    // получение списка источников данных
-    ipcMain.handle('get-data-sources', async () => {
+		// получение списка источников данных
+		ipcMain.handle('get-data-sources', async () => {
 			let dataSources = unwrap(await DataSource.findAll({ include: { model: TypeOfDataSource } }))
 			let castDataSources = []
 			for (let dataSource of dataSources) {
 				castDataSources.push({ id: dataSource.id, name: dataSource.name, config: JSON.parse(dataSource.config), TypeOfDataSource: dataSource.TypeOfDataSource })
 			}
-      return castDataSources
-    })
+			return castDataSources
+		})
 
 		// сохранение нового источника данных
 		ipcMain.handle('save-new-data-source', async (event, newDataSource) => {
@@ -35,7 +35,7 @@ class DataSourceIpc {
 				return false
 			}
 		})
-  }
+	}
 }
 
 export default new DataSourceIpc

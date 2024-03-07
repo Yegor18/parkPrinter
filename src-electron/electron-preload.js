@@ -31,7 +31,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('api', {
-  invoke: async (channel, data) => {
-    return await ipcRenderer.invoke(channel, data)
-  }
+	invoke: async (channel, data) => {
+		return await ipcRenderer.invoke(channel, data)
+	}
 })

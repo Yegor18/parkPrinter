@@ -4,11 +4,11 @@ import { Model, DataTypes } from 'sequelize'
 class Template extends Model { }
 
 Template.init({
-  name: DataTypes.STRING,
-  template: DataTypes.STRING(5000)
+	name: DataTypes.STRING,
+	template: DataTypes.STRING(5000)
 }, {
-  sequelize,
-  modelName: 'Template',
+	sequelize,
+	modelName: 'Template',
 	timestamps: false,
 	tableName: 'templates'
 })

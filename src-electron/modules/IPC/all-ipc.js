@@ -8,6 +8,6 @@ export {
 	SettingIpc,
 	PrinterIpc,
 	DriverIpc,
-  DataSourceIpc,
+	DataSourceIpc,
 	TemplateIpc
 }

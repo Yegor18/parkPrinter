@@ -4,7 +4,7 @@
 		<q-tabs v-model="tab" dense class="text-grey" active-color="primary" indicator-color="primary" narrow-indicator>
 			<q-tab name="main-settings" label="Основные настройки" />
 			<q-tab name="printers-settings" label="Принтеры" />
-      <q-tab name="data-sources-settings" label="Источники данных" />
+			<q-tab name="data-sources-settings" label="Источники данных" />
 		</q-tabs>
 
 		<q-tab-panels class="fit row wrap justify-start items-start content-start" v-model="tab">
@@ -16,9 +16,9 @@
 				<PrintersSettingsTabPanel />
 			</q-tab-panel>
 
-      <q-tab-panel name="data-sources-settings">
-        <DataSourcesSettingsTabPanel />
-      </q-tab-panel>
+			<q-tab-panel name="data-sources-settings">
+				<DataSourcesSettingsTabPanel />
+			</q-tab-panel>
 		</q-tab-panels>
 
 	</q-page>

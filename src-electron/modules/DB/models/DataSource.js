@@ -5,12 +5,12 @@ import TypeOfDataSource from './TypeOfDataSource.js'
 class DataSource extends Model { }
 
 DataSource.init({
-  name: DataTypes.STRING,
-  type_id: DataTypes.INTEGER,
-  config: DataTypes.STRING(1000)
+	name: DataTypes.STRING,
+	type_id: DataTypes.INTEGER,
+	config: DataTypes.STRING(1000)
 }, {
-  sequelize,
-  modelName: 'DataSource',
+	sequelize,
+	modelName: 'DataSource',
 	timestamps: false,
 	tableName: 'dataSources'
 })

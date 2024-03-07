@@ -3,15 +3,15 @@ import DataSource from './DataSource.js'
 
 class XlsDataSource extends DataSource {
 	constructor(pathToFile, pollingFrequency, printers) {
-    super(printers)
+		super(printers)
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
 		setInterval(async () => {
-      let rows = await this.read()
+			let rows = await this.read()
 			for (let printer of printers) {
-        if (printer.driver.check()) {
-          printer.driver.write(rows)
-        }
+				if (printer.driver.check()) {
+					printer.driver.write(rows)
+				}
 			}
 		}, this.pollingFrequency)
 	}

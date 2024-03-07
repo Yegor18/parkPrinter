@@ -11,13 +11,13 @@ class PrinterIpc {
 	constructor() {
 		// получение списка принтеров
 		ipcMain.handle('get-printers', async () => {
-			return unwrap(await Printer.findAll({ include: [ { model: Driver }, { model: DataSource }, { model: Template } ] })).map((printer) => {
-        if (printer.DataSource === null) {
-          printer.DataSource = { message: 'Без источника данных' }
-        }
-        printer.config = JSON.parse(printer.config)
-        return printer
-      })
+			return unwrap(await Printer.findAll({ include: [{ model: Driver }, { model: DataSource }, { model: Template }] })).map((printer) => {
+				if (printer.DataSource === null) {
+					printer.DataSource = { message: 'Без источника данных' }
+				}
+				printer.config = JSON.parse(printer.config)
+				return printer
+			})
 		})
 
 		// добавление нового принтера или изменение существующего
@@ -25,15 +25,15 @@ class PrinterIpc {
 			let driver = unwrap(await Driver.findOne({ where: { name: printer.driver } }))
 			let dataSource = unwrap(await DataSource.findOne({ where: { name: printer.dataSource } }))
 			let template = unwrap(await Template.findOne({ where: { name: printer.template } }))
-      let existingPrinter = {}
-      switch (printer.driver) {
-        case 'Файловый принтер':
-        case 'Сквозной TCP принтер':
-          existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, template_id: template.id, config: JSON.stringify(printer.config) } }))
-          break
-        default:
-          existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, template_id: template.id, ipAddress: printer.ipAddress, port: printer.port } }))
-      }
+			let existingPrinter = {}
+			switch (printer.driver) {
+				case 'Файловый принтер':
+				case 'Сквозной TCP принтер':
+					existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, template_id: template.id, config: JSON.stringify(printer.config) } }))
+					break
+				default:
+					existingPrinter = unwrap(await Printer.findOne({ where: { name: printer.name, template_id: template.id, ipAddress: printer.ipAddress, port: printer.port } }))
+			}
 			if (existingPrinter === null || existingPrinter.data_source_id === null) {
 				let newPrinter = { name: printer.name, driver_id: driver.id, ipAddress: printer.ipAddress, port: printer.port, is_active: false, data_source_id: dataSource.id, config: JSON.stringify(printer.config), template_id: template.id }
 				if (printer.id === '') {
@@ -68,7 +68,7 @@ class PrinterIpc {
 			if (operation === 'on') {
 				if (!driverModel.check() && await driverModel.start()) {
 					await Printer.update({ is_active: true }, { where: { id: printerId } })
-          equipmentManager.setIsActive(printerId, true)
+					equipmentManager.setIsActive(printerId, true)
 					return { type: 'ok-on', message: 'Подключение установлено!' }
 				} else {
 					return { type: 'error-on', message: 'Не удалось подключиться!' }

@@ -2,17 +2,17 @@ import net from 'node:net'
 import DataSource from './DataSource.js'
 
 class EndToEndTcpDataSource extends DataSource {
-  constructor(port, printers) {
-    super(printers)
-    this.port = port
+	constructor(port, printers) {
+		super(printers)
+		this.port = port
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
 				for (let printer of printers) {
-          if (printer.driver.check()) {
-            printer.driver.write(data)
-          }
-        }
+					if (printer.driver.check()) {
+						printer.driver.write(data)
+					}
+				}
 			})
 			client.on('error', (error) => {
 				console.log(`ON PORT: ${error}`)
@@ -27,7 +27,7 @@ class EndToEndTcpDataSource extends DataSource {
 				console.log(error)
 			})
 		})
-  }
+	}
 }
 
 export default EndToEndTcpDataSource
