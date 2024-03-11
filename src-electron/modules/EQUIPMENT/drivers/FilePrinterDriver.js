@@ -22,27 +22,10 @@ export default class FilePrinterDriver {
 	}
 
 	write(data) {
-		console.log(`FILE PRINTER DRIVER`)
-		console.log(data)
 		let completedTemplate = ''
-		if (Array.isArray(data)) {
-			for (let row of data) {
-				completedTemplate = this.fillTemplateWithData(row)
-				fs.appendFile(this.pathToFile, completedTemplate + '\n', (error) => {
-					if (error) {
-						console.log(error)
-					}
-				})
-			}
-		} else if (typeof data === 'object' && data !== null) {
-			completedTemplate = this.fillTemplateWithData(data)
-			fs.appendFile(this.pathToFile, data + '\n', (error) => {
-				if (error) {
-					console.log(error)
-				}
-			})
-		} else {
-			fs.appendFile(this.pathToFile, data + '\n', (error) => {
+		for (let row of data) {
+			completedTemplate = this.fillTemplateWithData(row)
+			fs.appendFile(this.pathToFile, completedTemplate + '\n', (error) => {
 				if (error) {
 					console.log(error)
 				}

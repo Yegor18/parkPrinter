@@ -41,7 +41,24 @@ class DataSourceManager {
 	}
 
 	updatePrintersInDataSource(printer, operation) {
-		this.castDataSources.find((castDataSource) => castDataSource.id === printer.dataSourceId).config.updateListPrinters(printer, operation)
+		if (operation === 'update') {
+			for (let i = 0; i < this.castDataSources.length; i++) {
+				for (let j = 0; j < this.castDataSources[i].config.printers.length; j++) {
+					if (printer.id === this.castDataSources[i].config.printers[j].id) {
+						this.castDataSources[i].config.updateListPrinters(printer, 'delete')
+					}
+				}
+				if (printer.dataSourceId === this.castDataSources[i].id) {
+					this.castDataSources[i].config.updateListPrinters(printer, 'add')
+				}
+			}
+		} else {
+			for (let i = 0; i < this.castDataSources.length; i++) {
+				if (printer.dataSourceId === this.castDataSources[i].id) {
+					this.castDataSources[i].config.updateListPrinters(printer, operation)
+				}
+			}
+		}
 	}
 
 	portIsOpen(port) {

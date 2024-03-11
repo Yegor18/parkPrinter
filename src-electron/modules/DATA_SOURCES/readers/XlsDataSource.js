@@ -8,7 +8,7 @@ class XlsDataSource extends DataSource {
 		this.pollingFrequency = pollingFrequency
 		setInterval(async () => {
 			let rows = await this.read()
-			for (let printer of printers) {
+			for (let printer of this.printers) {
 				if (printer.driver.check()) {
 					printer.driver.write(rows)
 				}
