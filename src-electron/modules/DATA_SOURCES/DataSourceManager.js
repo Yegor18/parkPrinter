@@ -1,3 +1,5 @@
+import net from 'node:net'
+import { MainWindow } from '../helpers.js'
 import DataSource from '../DB/models/DataSource'
 import TypeOfDataSource from '../DB/models/TypeOfDataSource'
 import { unwrap } from '../helpers.js'
@@ -40,6 +42,24 @@ class DataSourceManager {
 
 	updatePrintersInDataSource(printer, operation) {
 		this.castDataSources.find((castDataSource) => castDataSource.id === printer.dataSourceId).config.updateListPrinters(printer, operation)
+	}
+
+	portIsOpen(port) {
+		let server = net.createServer()
+		server.on('error', (error) => {
+			console.log(`===> ПОРТ: ${port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
+			if (error.code === 'EADDRINUSE') {
+				new MainWindow().window.webContents.send('opening-port-fail', `Порт ${port} уже занят`)
+			}
+		})
+		server.listen(port)
+		if (server.listening) {
+			server.close()
+			return true
+		} else {
+			server.close()
+			return false
+		}
 	}
 }
 

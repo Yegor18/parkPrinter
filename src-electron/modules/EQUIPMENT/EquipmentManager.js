@@ -9,6 +9,7 @@ import EndToEndPrinterDriver from './drivers/EndToEndPrinterDriver.js'
 import FilePrinterDriver from './drivers/FilePrinterDriver.js'
 import LogopackDriver from './drivers/LogopackDriver.js'
 import WindowsDriver from './drivers/WindowsDriver.js'
+import { MainWindow } from '../helpers.js'
 
 class EquipmentManager {
 	constructor() {
@@ -17,10 +18,18 @@ class EquipmentManager {
 
 	async start() {
 		await this.createCastPrinters()
+		let failedPrinters = []
 		for (let castPrinter of this.castPrinters) {
-			if (castPrinter.isActive) {
-				await castPrinter.driver.start()
+			if (castPrinter.isActive && !(await castPrinter.driver.start())) {
+				failedPrinters.push(castPrinter)
 			}
+		}
+		if (failedPrinters.length !== 0) {
+			setTimeout(() => {
+				new MainWindow().window.webContents.send('failed-connections', 'Не удалось подключиться к принтерам: ' + failedPrinters.map((failedPrinter) => {
+					return ` ${failedPrinter.name} (${failedPrinter.driver.ipAddress}:${failedPrinter.driver.port})`
+				}))
+			}, 5000)
 		}
 		await dataSourceManager.createCastDataSources(this.castPrinters)
 	}
@@ -100,18 +109,6 @@ class EquipmentManager {
 			case 'Сквозной TCP принтер':
 				return new EndToEndPrinterDriver(config.port)
 		}
-	}
-
-	async checkAllConnections() {
-		let failedConnections = []
-		for (let i = 0; i < this.castPrinters.length; i++) {
-			const printer = this.castPrinters[i]
-			if (!printer.driver.check() && printer.isActive) {
-				failedConnections.push({ printerId: printer.id, printer: printer.name, ipAddress: printer.driver.ipAddress, port: printer.driver.port })
-				this.castPrinters[i].isActive = false
-			}
-		}
-		return failedConnections
 	}
 }
 

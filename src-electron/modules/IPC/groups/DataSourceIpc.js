@@ -3,6 +3,7 @@ import DataSource from '../../DB/models/DataSource.js'
 import TypeOfDataSource from '../../DB/models/TypeOfDataSource.js'
 import { unwrap } from '../../helpers.js'
 import dataSourceManager from '../../DATA_SOURCES/DataSourceManager.js'
+import { Op } from 'sequelize'
 
 class DataSourceIpc {
 	constructor() {
@@ -23,18 +24,44 @@ class DataSourceIpc {
 
 		// сохранение нового источника данных
 		ipcMain.handle('save-new-data-source', async (event, newDataSource) => {
-			let typeId = unwrap(await TypeOfDataSource.findOne({ where: { name: newDataSource.type } })).id
-			let configString = JSON.stringify(newDataSource.config)
-			let existingDataSource = unwrap(await DataSource.findOne({ where: { name: newDataSource.name, type_id: typeId, config: configString } }))
-			if (existingDataSource === null) {
-				await DataSource.create({ name: newDataSource.name, type_id: typeId, config: configString })
-				let dataSourceId = unwrap(await DataSource.max('id'))
-				dataSourceManager.addCastDataSource(dataSourceId, newDataSource.type, newDataSource.config)
-				return true
+			let existingDataSource = {}
+			let existingMainConfig = {}
+			switch (newDataSource.type) {
+				case 'CSV':
+				case 'XLS':
+					existingDataSource = unwrap(await DataSource.findOne({ where: { config: { [Op.substring]: JSON.stringify(newDataSource.config.pathToFile) } } }))
+					if (existingDataSource !== null) {
+						existingMainConfig = JSON.parse(existingDataSource.config).pathToFile
+					}
+					break
+				case 'TCP (Данные)':
+				case 'TCP (Сквозной)':
+					existingDataSource = unwrap(await DataSource.findOne({ where: { config: { [Op.substring]: JSON.stringify(newDataSource.config.port) } } }))
+					if (existingDataSource !== null) {
+						existingMainConfig = JSON.parse(existingDataSource.config).port
+					}
+					break
+			}
+			if (existingDataSource !== null && (existingMainConfig.pathToFile === newDataSource.config.pathToFile || existingMainConfig.port === newDataSource.config.port)) {
+				return 'data-source-already-exists'
+			}
+			if ((newDataSource.type === 'TCP (Данные)' || newDataSource.type === 'TCP (Сквозной)') && dataSourceManager.portIsOpen(newDataSource.config.port)) {
+				await this.save(newDataSource)
+				return 'ok'
+			} else if (newDataSource.type !== 'TCP (Данные)' && newDataSource.type !== 'TCP (Сквозной)') {
+				await this.save(newDataSource)
+				return 'ok'
 			} else {
-				return false
+				return 'saving-is-not-possible'
 			}
 		})
+	}
+
+	async save(newDataSource) {
+		let typeId = unwrap(await TypeOfDataSource.findOne({ where: { name: newDataSource.type } })).id
+		await DataSource.create({ name: newDataSource.name, type_id: typeId, config: JSON.stringify(newDataSource.config) })
+		let dataSourceId = unwrap(await DataSource.max('id'))
+		dataSourceManager.addCastDataSource(dataSourceId, newDataSource.type, newDataSource.config)
 	}
 }
 

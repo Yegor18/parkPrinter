@@ -88,6 +88,7 @@ const $q = useQuasar()
 let printers = ref()
 let drivers = ref()
 let dataSources = ref()
+let dataSourcesDB
 let templates = ref()
 
 let deletePrinterForm = ref(false)
@@ -104,7 +105,8 @@ let fileForWritingFilePicker = ref({})
 onMounted(async () => {
 	printers.value = await window.api.invoke('get-printers')
 	drivers.value = await window.api.invoke('get-drivers')
-	dataSources.value = (await window.api.invoke('get-data-sources')).map((dataSource) => { return dataSource.name })
+	dataSourcesDB = (await window.api.invoke('get-data-sources'))
+	dataSources.value = dataSourcesDB.filter((dataSource) => dataSource.TypeOfDataSource.name !== 'TCP (Сквозной)').map((dataSource) => { return dataSource.name })
 	templates.value = await window.api.invoke('get-templates')
 })
 
@@ -115,6 +117,7 @@ function changeConfig() {
 			break
 		case 'Сквозной TCP принтер':
 			printerModel.value.config = { port: '' }
+			dataSources.value = dataSourcesDB.filter((dataSource) => dataSource.TypeOfDataSource.name === 'TCP (Сквозной)').map((dataSource) => { return dataSource.name })
 			break
 	}
 }
@@ -173,14 +176,10 @@ async function savePrinter() {
 		((newPrinter.driver === 'Файловый принтер' && newPrinter.config.pathToFile !== '') ||
 			(newPrinter.driver === 'Сквозной TCP принтер' && newPrinter.config.port !== '') ||
 			(newPrinter.ipAddress !== '' && newPrinter.port !== ''))) {
-		let result = await window.api.invoke('save-or-update-printer', newPrinter)
-		if (result === 'printer-created-or-updated') {
-			closeSaveOrUpdatePrinterForm()
-			printers.value = await window.api.invoke('get-printers')
-			$q.notify({ message: 'Принтер сохранён!', type: 'positive' })
-		} else {
-			$q.notify({ message: 'Принтер с такими настройками уже существует!', type: 'negative' })
-		}
+		await window.api.invoke('save-or-update-printer', newPrinter)
+		closeSaveOrUpdatePrinterForm()
+		printers.value = await window.api.invoke('get-printers')
+		$q.notify({ message: 'Принтер сохранён!', type: 'positive' })
 	} else {
 		$q.notify({ message: 'Не все поля указаны!', type: 'negative' })
 	}

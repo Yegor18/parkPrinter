@@ -48,7 +48,7 @@
 							<template #prepend><q-icon name="attach_file" /></template>
 						</q-file>
 						<q-input v-model="dataSourceModel.config.pathToFile" readonly type="text" label="Путь к файлу" outlined />
-						<q-input v-model="dataSourceModel.config.pollingFrequency" type="number" label="Частота опроса файла" outlined />
+						<q-input v-model="dataSourceModel.config.pollingFrequency" type="number" label="Частота опроса файла (мсек)" outlined />
 					</div>
 					<div class="q-gutter-y-md" v-else-if="dataSourceModel.type === 'API Endpoint'">
 						<q-input outlined v-model="dataSourceModel.config.token" readonly label="Токен" />
@@ -89,6 +89,9 @@ let newDataSourceFilePicker = ref({})
 onMounted(async () => {
 	dataSources.value = await window.api.invoke('get-data-sources')
 	typesOfDataSources.value = await window.api.invoke('get-types-of-data-sources')
+	window.api.on('opening-port-fail', (event, message) => {
+		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
+	})
 })
 
 function createDataSourceModel() {
@@ -128,14 +131,16 @@ async function saveNewDataSource() {
 				break
 		}
 		let result = await window.api.invoke('save-new-data-source', { name: dataSourceModel.value.name, type: dataSourceModel.value.type, config: config })
-		if (result) {
+		if (result === 'ok') {
 			addNewDataSourceForm.value = false
 			dataSources.value = await window.api.invoke('get-data-sources')
 			dataSourceModel.value = { name: '', type: '', config: {} }
 			newDataSourceFilePicker.value = {}
 			$q.notify({ message: 'Новый источник данных сохранён!', type: 'positive' })
+		} else if (result === 'data-source-already-exists') {
+			$q.notify({ message: 'Источник данных с такими настройками уже существует!', type: 'negative' })
 		} else {
-			$q.notify({ message: 'Такой источник данных уже существует!', type: 'negative' })
+			$q.notify({ message: 'Сохранение не возможно!', type: 'negative' })
 		}
 	} else {
 		$q.notify({ message: 'Не все поля указаны!', type: 'negative' })

@@ -33,5 +33,9 @@ import { contextBridge, ipcRenderer } from 'electron'
 contextBridge.exposeInMainWorld('api', {
 	invoke: async (channel, data) => {
 		return await ipcRenderer.invoke(channel, data)
-	}
+	},
+	on: (channel, listener) => {
+		ipcRenderer.on(channel, listener)
+	},
+	// testBack2Front: (callback) => ipcRenderer.on('connection-fall', (event, value) => callback(value))
 })

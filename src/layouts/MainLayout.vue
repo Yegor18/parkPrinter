@@ -1,16 +1,16 @@
 <template>
-  <q-layout view="lHh Lpr lff">
-    <q-header bordered class="bg-primary">
-      <q-toolbar>
-        <q-toolbar-title class="text-center">Редактор</q-toolbar-title>
-        <q-btn flat round dense icon="settings" to="/settings" />
-      </q-toolbar>
-    </q-header>
+	<q-layout view="lHh Lpr lff">
+		<q-header bordered class="bg-primary">
+			<q-toolbar>
+				<q-toolbar-title class="text-center">Редактор</q-toolbar-title>
+				<q-btn flat round dense icon="settings" to="/settings" />
+			</q-toolbar>
+		</q-header>
 
-    <q-page-container>
-      <router-view />
-    </q-page-container>
-  </q-layout>
+		<q-page-container>
+			<router-view />
+		</q-page-container>
+	</q-layout>
 </template>
 
 <script setup>
@@ -19,16 +19,9 @@ import { onMounted } from 'vue'
 
 const $q = useQuasar()
 
-onMounted(async () => {
-  getConnections()
+onMounted(() => {
+	window.api.on('failed-connections', (event, message) => {
+		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
+	})
 })
-
-async function getConnections() {
-  setInterval(async () => {
-    let message = await window.api.invoke('get-failed-connections-to-printers')
-    if (message !== '') {
-      $q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [ { label: 'принято', color: 'dark' } ] })
-    }
-  }, 2000)
-}
 </script>

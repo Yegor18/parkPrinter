@@ -1,6 +1,7 @@
 class DataSource {
 	constructor(printers) {
 		this.printers = printers
+		console.log(this.printers)
 	}
 
 	updateListPrinters(printer, operation) {
@@ -19,6 +20,7 @@ class DataSource {
 				this.printers = this.printers.filter((printerInArray) => printerInArray.id !== printer.id)
 				break
 		}
+		console.log(this.printers)
 	}
 }
 

@@ -1,4 +1,4 @@
-Аmodule.exports = {
+module.exports = {
 	name: '20240131114501-settings',
 	async up({ context: queryInterface }) {
 		await queryInterface.bulkInsert('settings', [
