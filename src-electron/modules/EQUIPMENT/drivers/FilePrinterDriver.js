@@ -22,7 +22,8 @@ export default class FilePrinterDriver {
 	}
 
 	write(data) {
-		console.log('\nПОЛУЧЕННЫЕ ДАННЫЕ ИЗ ИСТОЧНИКА ДАННЫХ В Файловом принтере')
+		console.log('\n===> ПОЛУЧЕНЫ ДАННЫЕ ОТ ИСТОЧНИКА ДАННЫХ В Файловом принтере')
+		console.log('\nДАННЫЕ')
 		console.log(data)
 		console.log('\nШАБЛОН')
 		console.log(this.template)

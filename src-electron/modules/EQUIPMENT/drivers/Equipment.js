@@ -9,14 +9,14 @@ export default class Equipment {
 		this.connection = new net.Socket()
 		this.connection.on('connect', () => {
 			this.isStarted = true
-			console.log(`===> ${this.ipAddress}:${this.port}: ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО`)
+			console.log(`\n===> ${this.ipAddress}:${this.port}: ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО`)
 		})
 		this.connection.on('error', (error) => {
 			this.isStarted = false
-			console.log(`===> ${this.ipAddress}:${this.port}: ВОЗНИКЛА ОШИБКА: ${error}`)
+			console.log(`\n===> ${this.ipAddress}:${this.port}: ВОЗНИКЛА ОШИБКА: ${error}`)
 		})
 		this.connection.on('close', () => {
-			console.log(`===> ${this.ipAddress}:${this.port}: СОЕДИНЕНИЕ ЗАКРЫЛОСЬ`)
+			console.log(`\n===> ${this.ipAddress}:${this.port}: СОЕДИНЕНИЕ ЗАКРЫЛОСЬ`)
 		})
 	}
 
@@ -24,7 +24,7 @@ export default class Equipment {
 		let ping = await tcpPingPort(this.ipAddress, parseInt(this.port))
 		if (ping.online !== true) {
 			this.isStarted = false
-			console.log(`===> ${this.ipAddress}:${this.port}: НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ`)
+			console.log(`\n===> ${this.ipAddress}:${this.port}: НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ`)
 			return false
 		}
 		this.connection.connect(this.port, this.ipAddress)
@@ -36,7 +36,7 @@ export default class Equipment {
 			this.connection.end()
 			this.connection.destroy()
 			this.isStarted = false
-			console.log(`===> ${this.ipAddress}:${this.port}: ОТКЛЮЧЕНИЕ ВЫПОЛНИТЬ УДАЛОСЬ`)
+			console.log(`\n===> ${this.ipAddress}:${this.port}: ОТКЛЮЧЕНИЕ ВЫПОЛНИТЬ УДАЛОСЬ`)
 			return true
 		} else {
 			return false
@@ -45,6 +45,8 @@ export default class Equipment {
 
 	write(data) {
 		try {
+			console.log(`\n===> ${this.ipAddress}:${this.port}: ПОЛУЧЕНЫ ДАННЫЕ ОТ ИСТОЧНИКА ДАННЫХ`)
+			console.log('\nДАННЫЕ')
 			console.log(data)
 			if (Array.isArray(data)) {
 				for (let row of data) {

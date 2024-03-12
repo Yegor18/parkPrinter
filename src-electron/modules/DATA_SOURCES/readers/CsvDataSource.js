@@ -11,7 +11,8 @@ class CsvDataSource extends DataSource {
 			for (let printer of this.printers) {
 				if (printer.driver.check()) {
 					if (this.data !== undefined) {
-						console.log('\nПОДГОТОВЛЕННЫЕ ДАННЫЕ ИЗ CSV')
+						console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ CSV')
+						console.log('\nДАННЫЕ')
 						console.log(this.data)
 						printer.driver.write(this.data)
 					}
