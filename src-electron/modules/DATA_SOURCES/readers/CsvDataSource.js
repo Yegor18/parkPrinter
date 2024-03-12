@@ -10,7 +10,11 @@ class CsvDataSource extends DataSource {
 			this.read()
 			for (let printer of this.printers) {
 				if (printer.driver.check()) {
-					printer.driver.write(this.data)
+					if (this.data !== undefined) {
+						console.log('\nПОДГОТОВЛЕННЫЕ ДАННЫЕ ИЗ CSV')
+						console.log(this.data)
+						printer.driver.write(this.data)
+					}
 				}
 			}
 		}, this.pollingFrequency)

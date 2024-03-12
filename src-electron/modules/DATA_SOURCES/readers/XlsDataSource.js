@@ -10,6 +10,8 @@ class XlsDataSource extends DataSource {
 			let rows = await this.read()
 			for (let printer of this.printers) {
 				if (printer.driver.check()) {
+					console.log('\nПОДГОТОВЛЕННЫЕ ДАННЫЕ ИЗ XLS')
+					console.log(rows)
 					printer.driver.write(rows)
 				}
 			}

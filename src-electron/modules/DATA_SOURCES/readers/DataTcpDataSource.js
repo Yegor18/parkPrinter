@@ -12,6 +12,8 @@ class DataTcpDataSource extends DataSource {
 			client.on('data', (data) => {
 				for (let printer of this.printers) {
 					if (printer.driver.check()) {
+						console.log('\nПОДГОТОВЛЕННЫЕ ДАННЫЕ ИЗ TCP (Данные)')
+						console.log(this.prepareData(data))
 						printer.driver.write(this.prepareData(data))
 					}
 				}
@@ -40,15 +42,15 @@ class DataTcpDataSource extends DataSource {
 	prepareData(data) {
 		let result = []
 		let separators = this.mask.split('[name]')[1].split('[value]')
+		let variables = {}
 		while (data !== '') {
 			let hold = data.split(separators[0])
 			let name = hold[0]
 			let value = hold[1].substring(0, hold[1].indexOf(separators[1]))
-			// let variable = {}
-			// variable[name] = value
-			result.push({ name: name, value: value })
+			variables[name] = value
 			data = data.substring(data.indexOf(separators[1]) + 1)
 		}
+		result.push(variables)
 		return result
 	}
 }

@@ -22,23 +22,31 @@ export default class FilePrinterDriver {
 	}
 
 	write(data) {
-		let completedTemplate = ''
+		console.log('\nПОЛУЧЕННЫЕ ДАННЫЕ ИЗ ИСТОЧНИКА ДАННЫХ В Файловом принтере')
+		console.log(data)
+		console.log('\nШАБЛОН')
+		console.log(this.template)
 		for (let row of data) {
-			completedTemplate = this.fillTemplateWithData(row)
+			let completedTemplate = this.template
+			let arrayOfVarNames = Object.keys(row)
+			for (let varName of arrayOfVarNames) {
+				while (completedTemplate.includes('${' + varName + '}')) {
+					completedTemplate = completedTemplate.replace('${' + varName + '}', row[varName])
+				}
+			}
+			while (completedTemplate.includes(completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}')))) {
+				completedTemplate = completedTemplate.replace(completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}') + 1), '')
+				if (completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}')) === '') {
+					break
+				}
+			}
+			console.log('\nЗАПОЛНЕННЫЙ ШАБЛОН')
+			console.log(completedTemplate)
 			fs.appendFile(this.pathToFile, completedTemplate + '\n', (error) => {
 				if (error) {
 					console.log(error)
 				}
 			})
 		}
-	}
-
-	fillTemplateWithData(row) {
-		let arrayOfVarNames = Object.keys(row)
-		let result = this.template
-		for (let varName of arrayOfVarNames) {
-			result = result.replace('${' + varName + '}', row[varName])
-		}
-		return result
 	}
 }
