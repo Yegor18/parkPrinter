@@ -10,12 +10,15 @@ class DataTcpDataSource extends DataSource {
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
-				for (let printer of this.printers) {
-					if (printer.driver.check()) {
-						console.log('\nПОДГОТОВЛЕННЫЕ ДАННЫЕ ИЗ TCP (Данные)')
-						console.log(this.prepareData(data))
-						printer.driver.write(this.prepareData(data))
+				let preparedData = this.prepareData(data)
+				if (preparedData !== null) {
+					for (let printer of this.printers) {
+						if (printer.driver.check()) {
+							printer.driver.write(preparedData)
+						}
 					}
+				} else {
+					new MainWindow().window.webContents.send('data-is-not-valid-for-tcp-data-data-source', `Ошибка на слушающем порту ${this.port} в источнике данных TCP (Данные): получили неверные данные, данные нельзя обработать согласно маске. Данные: ${data} Маска: ${this.mask}`)
 				}
 			})
 			client.on('close', () => {
@@ -40,18 +43,19 @@ class DataTcpDataSource extends DataSource {
 	}
 
 	prepareData(data) {
-		let result = []
 		let separators = this.mask.split('[name]')[1].split('[value]')
 		let variables = {}
 		while (data !== '') {
 			let hold = data.split(separators[0])
+			if (hold.length === 1 || hold[1] === '' || !hold[1].includes(separators[1])) {
+				return null
+			}
 			let name = hold[0]
 			let value = hold[1].substring(0, hold[1].indexOf(separators[1]))
 			variables[name] = value
 			data = data.substring(data.indexOf(separators[1]) + 1)
 		}
-		result.push(variables)
-		return result
+		return variables
 	}
 }
 
