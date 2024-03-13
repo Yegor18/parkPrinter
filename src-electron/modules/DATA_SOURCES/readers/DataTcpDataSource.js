@@ -17,7 +17,7 @@ class DataTcpDataSource extends DataSource {
 					console.log(preparedData)
 					for (let printer of this.printers) {
 						if (printer.driver.check()) {
-							printer.driver.write(preparedData)
+							printer.driver.write([preparedData])
 						}
 					}
 				} else {
