@@ -35,23 +35,23 @@
 			</q-card-section>
 			<q-card-section>
 				<q-form class="col q-gutter-y-md" @submit.prevent>
-					<q-input outlined v-model="printerModel.name" label="Название принтера" />
-					<q-select outlined v-model="printerModel.driver" :options="drivers" @update:model-value="changeConfig" label="Драйвер принтера" />
+					<q-input outlined v-model="printerModel.name" :rules="rulesForValidations.printerName" label="Название принтера" />
+					<q-select outlined v-model="printerModel.driver" :rules="rulesForValidations.printerDriver" :options="drivers" @update:model-value="changeConfig" label="Драйвер принтера" />
 					<div class="q-gutter-y-md" v-if="printerModel.driver === 'Файловый принтер'">
 						<q-file v-model="fileForWritingFilePicker" @update:model-value="writePathToConfig" clearable outlined label="Выбрать TXT файл" accept=".txt">
 							<template #prepend><q-icon name="attach_file" /></template>
 						</q-file>
-						<q-input v-model="printerModel.config.pathToFile" readonly type="text" label="Путь к файлу" outlined />
+						<q-input v-model="printerModel.config.pathToFile" :rules="rulesForValidations.printerPathToFile" readonly type="text" label="Путь к файлу" outlined />
 					</div>
 					<div v-else-if="printerModel.driver === 'Сквозной TCP принтер'">
-						<q-input outlined v-model="printerModel.config.port" mask="#####" label="Порт" />
+						<q-input outlined v-model="printerModel.port" mask="#####" hint="Значение от 5000 до 40000" :rules="rulesForValidations.printerPort" label="Порт" />
 					</div>
 					<div class="q-gutter-y-md" v-else>
-						<q-input outlined v-model="printerModel.ipAddress" label="IP адрес" />
-						<q-input outlined v-model="printerModel.port" mask="#####" label="Порт" />
+						<q-input outlined v-model="printerModel.ipAddress" :rules="rulesForValidations.printerIpAddress" label="IP адрес" />
+						<q-input outlined v-model="printerModel.port" mask="#####" hint="Значение от 5000 до 40000" :rules="rulesForValidations.printerPort" label="Порт" />
 					</div>
-					<q-select outlined v-model="printerModel.dataSource" :options="dataSources" label="Источник данных" />
-					<q-select outlined v-model="printerModel.template" :options="templates" label="Шаблон" />
+					<q-select outlined v-model="printerModel.dataSource" :options="dataSources" :rules="rulesForValidations.printerDataSource" label="Источник данных" />
+					<q-select outlined v-model="printerModel.template" :options="templates" :rules="rulesForValidations.printerTemplate" label="Шаблон" />
 					<div class="row q-gutter-x-md">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="savePrinter" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="closeSaveOrUpdatePrinterForm" /></div>
@@ -101,6 +101,16 @@ let printerModel = ref({ id: '', name: '', driver: '', ipAddress: '', port: '', 
 let forSpinner = ref(false)
 
 let fileForWritingFilePicker = ref({})
+
+const rulesForValidations = ref({
+	printerName: [value => !!value || 'Введите название!'],
+	printerDriver: [value => !!value || 'Выберите тип!'],
+	printerIpAddress: [value => !!value || 'Введите IP-адрес!'],
+	printerPort: [value => !!value || 'Введите значение!', value => (value >= 5000 && value <= 40000) || 'Неверное значение порта!'],
+	printerPathToFile: [value => (!!value || value !== '') || 'Выберите файл!'],
+	printerDataSource: [value => !!value || 'Выберите источник данных!'],
+	printerTemplate: [value => !!value || 'Выберите шаблон!'],
+})
 
 onMounted(async () => {
 	printers.value = await window.api.invoke('get-printers')
@@ -180,8 +190,6 @@ async function savePrinter() {
 		closeSaveOrUpdatePrinterForm()
 		printers.value = await window.api.invoke('get-printers')
 		$q.notify({ message: 'Принтер сохранён!', type: 'positive' })
-	} else {
-		$q.notify({ message: 'Не все поля указаны!', type: 'negative' })
 	}
 }
 
