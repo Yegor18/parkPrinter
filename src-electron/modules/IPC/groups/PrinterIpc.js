@@ -21,6 +21,7 @@ class PrinterIpc {
 		})
 
 		// добавление нового принтера или изменение существующего
+		//думаю стоит разделить обновление и сохранение принтера
 		ipcMain.handle('save-or-update-printer', async (event, printer) => {
 			let driver = unwrap(await Driver.findOne({ where: { name: printer.driver } }))
 			let dataSource = unwrap(await DataSource.findOne({ where: { name: printer.dataSource } }))
@@ -49,7 +50,9 @@ class PrinterIpc {
 		})
 
 		// включение и отключение принтера
+		//***Разделить на 2 операции on и off
 		ipcMain.handle('turn-on-off-printer', async (event, { printerId, operation }) => {
+			console.log("equipmentManager ",equipmentManager)
 			let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver
 			if (operation === 'on') {
 				if (!driverModel.check() && await driverModel.start()) {

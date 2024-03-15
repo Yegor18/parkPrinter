@@ -1,4 +1,6 @@
 class DataSource {
+	//***Избавиться от этого Класса
+	//Принтеры получать с помощью запроса в базу данных
 	constructor(printers) {
 		this.printers = printers
 	}

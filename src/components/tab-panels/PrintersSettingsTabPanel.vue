@@ -105,6 +105,7 @@ let fileForWritingFilePicker = ref({})
 const rulesForValidations = ref({
 	printerName: [value => !!value || 'Введите название!'],
 	printerDriver: [value => !!value || 'Выберите тип!'],
+	//***Расширить правило для айпишников. запретить введение букв
 	printerIpAddress: [value => !!value || 'Введите IP-адрес!'],
 	printerPort: [value => !!value || 'Введите значение!', value => (value >= 5000 && value <= 40000) || 'Неверное значение порта!'],
 	printerPathToFile: [value => (!!value || value !== '') || 'Выберите файл!'],
@@ -113,6 +114,7 @@ const rulesForValidations = ref({
 })
 
 onMounted(async () => {
+	//***почему функции называются одинаково get_something, но возвращают разные типы ответов(объекты и строки)?
 	printers.value = await window.api.invoke('get-printers')
 	drivers.value = await window.api.invoke('get-drivers')
 	dataSourcesDB = (await window.api.invoke('get-data-sources'))
@@ -120,6 +122,7 @@ onMounted(async () => {
 	templates.value = await window.api.invoke('get-templates')
 })
 
+//***переименовать функцию
 function changeConfig() {
 	switch (printerModel.value.driver) {
 		case 'Файловый принтер':

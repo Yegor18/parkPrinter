@@ -25,6 +25,7 @@ class EquipmentManager {
 			}
 		}
 		if (failedPrinters.length !== 0) {
+			//интересно зачем тут таймер
 			setTimeout(() => {
 				new MainWindow().window.webContents.send('failed-connections', 'Не удалось подключиться к принтерам: ' + failedPrinters.map((failedPrinter) => {
 					return ` ${failedPrinter.name} (${failedPrinter.driver.ipAddress}:${failedPrinter.driver.port})`
@@ -41,11 +42,12 @@ class EquipmentManager {
 				id: printer.id,
 				name: printer.name,
 				isActive: printer.is_active,
-				dataSourceId: '',
+				dataSourceId: '',//перенести цикл сюда
 				driver: {},
 				template: printer.Template.template
 			}
 			castPrinter.driver = this.createDriver(printer.Driver.name, printer, castPrinter.template)
+			//цикл перенести в определение свойства
 			if (printer.DataSource !== null) {
 				castPrinter.dataSourceId = printer.DataSource.id
 			}
@@ -90,6 +92,8 @@ class EquipmentManager {
 		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
 		this.castPrinters[this.castPrinters.indexOf(printer)].isActive = isActive
 		printer.isActive = isActive
+		console.log("dataSourceManager ",dataSourceManager)
+		//функция обновляет
 		dataSourceManager.updatePrintersInDataSource(printer, 'update')
 	}
 

@@ -13,8 +13,12 @@ class DataSourceManager {
 		this.castDataSources = []
 	}
 
+
 	async createCastDataSources(printers) {
 		let dataSources = unwrap(await DataSource.findAll({ include: { model: TypeOfDataSource } }))
+		//***плохо прописанный цикл.
+		//Цикл должен работать наоборот т.е
+		//Цикл по принтерам, а внутри цикл по источникам данных
 		this.castDataSources = dataSources.map((dataSource) => {
 			let castDataSource = { id: dataSource.id, typeName: dataSource.TypeOfDataSource.name, config: {} }
 			let printersBelongingToDataSource = printers.filter((printer) => printer.dataSourceId === dataSource.id)

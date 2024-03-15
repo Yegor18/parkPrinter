@@ -6,6 +6,7 @@ class EndToEndTcpDataSource extends DataSource {
 	constructor(port, printers) {
 		super(printers)
 		this.port = port
+		//коллбек принимает не client, это serverSocket
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8')
 			client.on('data', (data) => {
@@ -22,6 +23,7 @@ class EndToEndTcpDataSource extends DataSource {
 				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
 			})
 		})
+		//переместить слушатели внутрь колбека
 		server.on('connection', () => {
 			console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ПОДКЛЮЧИЛСЯ`)
 		})

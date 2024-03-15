@@ -94,7 +94,7 @@ let separator1 = ref('[разделитель1]')
 let separator2 = ref('[разделитель2]')
 const separators = [':', ';', '-', '=', ',', '_']
 let availableSeparators = ref(separators)
-
+//*** Добавить правила валидации при создании нового оборудования принтера
 const rulesForValidations = ref({
 	dataSourceName: [value => !!value || 'Введите название!'],
 	dataSourceType: [value => !!value || 'Выберите тип!'],
@@ -116,9 +116,10 @@ function createMask() {
 	dataSourceModel.value.config.mask = '[name]' + separator1.value + '[value]' + separator2.value
 }
 
+//***сделать массив разделителей
 function changeAvailableSeparators(usedSeparator) {
 	createMask()
-	availableSeparators.value = separators.filter((separator) => separator !== usedSeparator)
+  availableSeparators.value = separators.filter((separator) => separator !== usedSeparator)
 	if (!dataSourceModel.value.config.mask.includes('разделитель')) {
 		availableSeparators.value = separators.filter((separator) => separator !== usedSeparator && separator !== separator1.value && separator !== separator2.value)
 	}

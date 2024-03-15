@@ -7,6 +7,7 @@ class DataTcpDataSource extends DataSource {
 		super(printers)
 		this.port = port
 		this.mask = mask
+		//коллбек принимает не client, это serverSocket
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
@@ -33,6 +34,7 @@ class DataTcpDataSource extends DataSource {
 				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
 			})
 		})
+		//переместить слушатели внутрь колбека
 		server.on('connection', () => {
 			console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ПОДКЛЮЧИЛСЯ`)
 		})

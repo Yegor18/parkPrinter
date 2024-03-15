@@ -24,7 +24,9 @@ class CsvDataSource extends DataSource {
 	read() {
 		fs.readFile(this.pathToFile, { encoding: 'utf-8' }, (error, data) => {
 			if (!error) {
-				let rows = data.split('\"').filter((row) => row !== '' && row !== '\r\n')
+				//Закомментировано ошибочное решение
+				//let rows = data.split('\"').filter((row) => row !== '' && row !== '\r\n')
+				let rows = data.split('\r\n')
 				let namesOfVariables = rows[0].split(',')
 				let result = []
 				for (let i = 1; i < rows.length; i++) {
@@ -41,7 +43,7 @@ class CsvDataSource extends DataSource {
 			}
 		})
 	}
-
+	//зачем здесь эта функция? она бессмыслена
 	writeData(data) {
 		this.data = data
 	}
