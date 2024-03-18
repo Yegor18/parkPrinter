@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import DataSource from '../../DB/models/DataSource.js'
 import TypeOfDataSource from '../../DB/models/TypeOfDataSource.js'
-import { unwrap } from '../../helpers.js'
+import { portIsOpen, unwrap } from '../../helpers.js'
 import dataSourceManager from '../../DATA_SOURCES/DataSourceManager.js'
 import { Op } from 'sequelize'
 
@@ -45,7 +45,7 @@ class DataSourceIpc {
 			if (existingDataSource !== null && (existingMainConfig.pathToFile === newDataSource.config.pathToFile || existingMainConfig.port === newDataSource.config.port)) {
 				return 'data-source-already-exists'
 			}
-			if ((newDataSource.type === 'TCP (Данные)' || newDataSource.type === 'TCP (Сквозной)') && dataSourceManager.portIsOpen(newDataSource.config.port)) {
+			if ((newDataSource.type === 'TCP (Данные)' || newDataSource.type === 'TCP (Сквозной)') && portIsOpen(newDataSource.config.port)) {
 				await this.save(newDataSource)
 				return 'ok'
 			} else if (newDataSource.type !== 'TCP (Данные)' && newDataSource.type !== 'TCP (Сквозной)') {

@@ -60,24 +60,6 @@ class DataSourceManager {
 			}
 		}
 	}
-
-	portIsOpen(port) {
-		let server = net.createServer()
-		server.on('error', (error) => {
-			console.log(`===> ПОРТ: ${port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
-			if (error.code === 'EADDRINUSE') {
-				new MainWindow().window.webContents.send('opening-port-fail', `Порт ${port} уже занят`)
-			}
-		})
-		server.listen(port)
-		if (server.listening) {
-			server.close()
-			return true
-		} else {
-			server.close()
-			return false
-		}
-	}
 }
 
 const dataSourceManager = new DataSourceManager()

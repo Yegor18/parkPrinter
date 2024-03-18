@@ -26,5 +26,8 @@ onMounted(() => {
 	window.api.on('data-is-not-valid-for-tcp-data-data-source', (event, message) => {
 		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
 	})
+	window.api.on('opening-port-fail', (event, message) => {
+		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
+	})
 })
 </script>

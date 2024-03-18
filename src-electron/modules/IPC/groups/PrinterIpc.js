@@ -2,7 +2,7 @@ import { ipcMain } from 'electron'
 import { tcpPingPort } from 'tcp-ping-port'
 import Printer from '../../DB/models/Printer.js'
 import Driver from '../../DB/models/Driver.js'
-import { unwrap } from '../../helpers.js'
+import { portIsOpen, unwrap } from '../../helpers.js'
 import equipmentManager from '../../EQUIPMENT/EquipmentManager.js'
 import DataSource from '../../DB/models/DataSource.js'
 import Template from '../../DB/models/Template.js'
@@ -64,11 +64,11 @@ class PrinterIpc {
 		})
 
 		// проверка подключения к принтеру
-		ipcMain.handle('test-connection', async (event, printerIpAddress) => {
-			let result = await tcpPingPort(printerIpAddress)
+		ipcMain.handle('test-connection', async (event, { printerIpAddress, printerPort }) => {
+			let result = await tcpPingPort(printerIpAddress, printerPort)
 			return result.online
 		})
-
+		
 		// включение и отключение принтера
 		ipcMain.handle('turn-on-off-printer', async (event, { printerId, operation }) => {
 			let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver

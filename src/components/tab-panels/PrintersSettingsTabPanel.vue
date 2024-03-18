@@ -55,7 +55,9 @@
 					<div class="row q-gutter-x-md">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="savePrinter" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="closeSaveOrUpdatePrinterForm" /></div>
-						<div class="col-auto"><q-btn label="проверить подключение" color="primary" dense unelevated @click="testConnection(printerModel.ipAddress)" /></div>
+						<div class="col-auto" v-if="printerModel.driver === 'Файловый принтер'"><q-btn label="проверить файл" color="primary" dense unelevated @click="checkFile(printerModel.config.pathToFile)" /></div>
+						<div class="col-auto" v-else-if="printerModel.driver === 'Сквозной TCP принтер'"><q-btn label="проверить порт" color="primary" dense unelevated @click="testPort(printerModel.config.port)" /></div>
+						<div class="col-auto" v-else><q-btn label="проверить подключение" color="primary" dense unelevated @click="testConnection(printerModel.ipAddress, printerModel.port)" /></div>
 					</div>
 					<q-spinner-radio v-if="forSpinner" color="primary" size="2em" />
 				</q-form>
@@ -213,18 +215,34 @@ async function deletePrinter(printerId) {
 	$q.notify({ message: 'Принтер удалён!', type: 'positive' })
 }
 
-async function testConnection(printerIpAddress) {
-	if (printerIpAddress !== '') {
+async function testConnection(printerIpAddress, printerPort) {
+	if (printerIpAddress !== '' && printerIpAddress.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) !== null && printerPort !== '' && printerPort >= 5000 && printerPort <= 40000) {
 		forSpinner.value = true
-		let result = await window.api.invoke('test-connection', printerIpAddress)
+		let result = await window.api.invoke('test-connection', { ipAddress: printerIpAddress, port: printerPort })
 		if (result) {
 			$q.notify({ message: 'Подключение установлено!', type: 'positive' })
 		} else {
 			$q.notify({ message: 'Подключение НЕ установлено!', type: 'negative' })
 		}
 		forSpinner.value = false
+	}
+}
+
+async function testPort(serverPort) {
+	if (serverPort !== '' && serverPort >= 5000 && serverPort <= 40000) {
+		let result = await window.api.invoke('test-port', serverPort)
+		if (result) {
+			$q.notify({ message: 'Порт свободен!', type: 'positive' })
+		}
+	}
+}
+
+async function checkFile(pathToFile) {
+	let result = await window.api.invoke('check-file', pathToFile)
+	if (result) {
+		$q.notify({ message: 'Файл существует!', type: 'positive' })
 	} else {
-		$q.notify({ message: 'Введите IP адрес!', type: 'negative' })
+		$q.notify({ message: 'Файл не существует!', type: 'negative' })
 	}
 }
 

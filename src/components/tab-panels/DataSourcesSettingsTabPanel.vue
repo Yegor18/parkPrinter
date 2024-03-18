@@ -68,6 +68,8 @@
 					<div class="row q-gutter-x-md justify-end">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="saveNewDataSource" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="cancel" /></div>
+						<div class="col-auto" v-if="dataSourceModel.type === 'TCP (Сквозной)' || dataSourceModel.type === 'TCP (Данные)'"><q-btn label="проверить порт" color="primary" dense unelevated @click="testPort(dataSourceModel.config.port)" /></div>
+						<div class="col-auto" v-else><q-btn label="проверить файл" color="primary" dense unelevated @click="checkFile(dataSourceModel.config.pathToFile)" /></div>
 					</div>
 				</q-form>
 			</q-card-section>
@@ -107,10 +109,25 @@ const rulesForValidations = ref({
 onMounted(async () => {
 	dataSources.value = await window.api.invoke('get-data-sources')
 	typesOfDataSources.value = await window.api.invoke('get-types-of-data-sources')
-	window.api.on('opening-port-fail', (event, message) => {
-		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
-	})
 })
+
+async function testPort(serverPort) {
+	if (serverPort !== '' && serverPort >= 5000 && serverPort <= 40000) {
+		let result = await window.api.invoke('test-port', serverPort)
+		if (result) {
+			$q.notify({ message: 'Порт свободен!', type: 'positive' })
+		}
+	}
+}
+
+async function checkFile(pathToFile) {
+	let result = await window.api.invoke('check-file', pathToFile)
+	if (result) {
+		$q.notify({ message: 'Файл существует!', type: 'positive' })
+	} else {
+		$q.notify({ message: 'Файл не существует!', type: 'negative' })
+	}
+}
 
 function createMask() {
 	dataSourceModel.value.config.mask = '[name]' + separator1.value + '[value]' + separator2.value
