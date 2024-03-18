@@ -44,7 +44,7 @@
 						<q-input v-model="printerModel.config.pathToFile" :rules="rulesForValidations.printerPathToFile" readonly type="text" label="Путь к файлу" outlined />
 					</div>
 					<div v-else-if="printerModel.driver === 'Сквозной TCP принтер'">
-						<q-input outlined v-model="printerModel.port" mask="#####" hint="Значение от 5000 до 40000" :rules="rulesForValidations.printerPort" label="Порт" />
+						<q-input outlined v-model="printerModel.config.port" mask="#####" hint="Значение от 5000 до 40000" :rules="rulesForValidations.printerPort" label="Порт" />
 					</div>
 					<div class="q-gutter-y-md" v-else>
 						<q-input outlined v-model="printerModel.ipAddress" :rules="rulesForValidations.printerIpAddress" label="IP адрес" />
@@ -102,10 +102,12 @@ let forSpinner = ref(false)
 
 let fileForWritingFilePicker = ref({})
 
+let operationOnPrinter = ''
+
 const rulesForValidations = ref({
 	printerName: [value => !!value || 'Введите название!'],
 	printerDriver: [value => !!value || 'Выберите тип!'],
-	printerIpAddress: [value => !!value || 'Введите IP-адрес!'],
+	printerIpAddress: [value => !!value || 'Введите IP-адрес!', value => value.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) !== null || 'Неверный IP-адрес!'],
 	printerPort: [value => !!value || 'Введите значение!', value => (value >= 5000 && value <= 40000) || 'Неверное значение порта!'],
 	printerPathToFile: [value => (!!value || value !== '') || 'Выберите файл!'],
 	printerDataSource: [value => !!value || 'Выберите источник данных!'],
@@ -150,9 +152,11 @@ function openSaveOrUpdatePrinterForm(printer, operation) {
 			} else {
 				printerModel.value = { id: printer.id, name: printer.name, driver: printer.Driver.name, ipAddress: printer.ipAddress, port: printer.port, dataSource: printer.DataSource.name, config: printer.config, template: printer.Template.name }
 			}
+			operationOnPrinter = 'update'
 			break
 		case 'add-printer':
 			titleForSaveOrUpdatePrinterForm.value = 'Добавить принтер'
+			operationOnPrinter = 'add'
 			break
 	}
 	saveOrUpdatePrinterForm.value = true
@@ -184,12 +188,16 @@ async function savePrinter() {
 	}
 	if ((newPrinter.name !== '' && newPrinter.driver !== '' && newPrinter.dataSource !== '' && newPrinter.template !== '') &&
 		((newPrinter.driver === 'Файловый принтер' && newPrinter.config.pathToFile !== '') ||
-			(newPrinter.driver === 'Сквозной TCP принтер' && newPrinter.config.port !== '') ||
-			(newPrinter.ipAddress !== '' && newPrinter.port !== ''))) {
-		await window.api.invoke('save-or-update-printer', newPrinter)
-		closeSaveOrUpdatePrinterForm()
-		printers.value = await window.api.invoke('get-printers')
-		$q.notify({ message: 'Принтер сохранён!', type: 'positive' })
+			(newPrinter.driver === 'Сквозной TCP принтер' && newPrinter.config.port !== '' && newPrinter.config.port >= 5000 && newPrinter.config.port <= 40000) ||
+			(newPrinter.ipAddress !== '' && newPrinter.ipAddress.match(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) !== null && newPrinter.port !== '' && newPrinter.port >= 5000 && newPrinter.port <= 40000))) {
+		let result = await window.api.invoke('save-or-update-printer', { printer: newPrinter, operation: operationOnPrinter })
+		if (result === 'printer-already-exists') {
+			$q.notify({ message: 'Принтер с такими настройками уже существует!', type: 'negative' })
+		} else {
+			closeSaveOrUpdatePrinterForm()
+			printers.value = await window.api.invoke('get-printers')
+			$q.notify({ message: 'Принтер сохранён!', type: 'positive' })
+		}
 	}
 }
 

@@ -21,7 +21,28 @@ class PrinterIpc {
 		})
 
 		// добавление нового принтера или изменение существующего
-		ipcMain.handle('save-or-update-printer', async (event, printer) => {
+		ipcMain.handle('save-or-update-printer', async (event, { printer, operation }) => {
+			console.log('\nДАННЫЕ ПРИНТЕРА НА СОХРАНЕНИЕ:')
+			console.log(printer)
+			let existingPrinter = {}
+			switch (printer.driver) {
+				case 'logopack':
+				case 'dikai':
+				case 'windows':
+					existingPrinter = await this.findExistingPrinter({ ipAddress: printer.ipAddress, port: printer.port })
+					break
+				case 'Файловый принтер':
+					existingPrinter = await this.findExistingPrinter({ config: JSON.stringify(printer.config) })
+					break
+				case 'Сквозной TCP принтер':
+					existingPrinter = await this.findExistingPrinter({ config: JSON.stringify(printer.config) })
+					break
+			}
+			if ((operation === 'add' && existingPrinter !== null) || (operation === 'update' && existingPrinter !== null && existingPrinter.id !== printer.id)) {
+				console.log('\nПРИНТЕР УЖЕ СУЩЕСТВУЕТ С ТАКИМИ НАСТРОЙКАМИ:')
+				console.log(existingPrinter)
+				return 'printer-already-exists'
+			}
 			let driver = unwrap(await Driver.findOne({ where: { name: printer.driver } }))
 			let dataSource = unwrap(await DataSource.findOne({ where: { name: printer.dataSource } }))
 			let template = unwrap(await Template.findOne({ where: { name: printer.template } }))
@@ -69,6 +90,12 @@ class PrinterIpc {
 				}
 			}
 		})
+	}
+
+	async findExistingPrinter(searchParams) {
+		console.log('\nДАННЫЕ ДЛЯ ПОИСКА СУЩЕСТВУЮЩЕГО ПРИНТЕРА ПО ОСНОВНЫМ НАСТРОЙКАМ:')
+		console.log(searchParams)
+		return unwrap(await Printer.findOne({ where: searchParams }))
 	}
 }
 

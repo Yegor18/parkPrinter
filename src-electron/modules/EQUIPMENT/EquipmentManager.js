@@ -55,6 +55,11 @@ class EquipmentManager {
 	}
 
 	updateCastPrinter(printerId, newDriverName, updatedPrinter, newTemplate) {
+		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
+		printer.driver.stop()
+		if (printer.driver instanceof EndToEndPrinterDriver) {
+			printer.driver.closeServer()
+		}
 		let newDriver = this.createDriver(newDriverName, updatedPrinter, newTemplate)
 		for (let i = 0; i < this.castPrinters.length; i++) {
 			if (this.castPrinters[i].id === printerId) {
@@ -75,7 +80,12 @@ class EquipmentManager {
 	}
 
 	deleteCastPrinter(printerId) {
-		let printer = {}
+		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
+		printer.driver.stop()
+		if (printer.driver instanceof EndToEndPrinterDriver) {
+			printer.driver.closeServer()
+		}
+		printer = {}
 		this.castPrinters = this.castPrinters.filter((castPrinter) => {
 			if (castPrinter.id !== printerId) {
 				return castPrinter
