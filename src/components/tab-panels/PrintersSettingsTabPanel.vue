@@ -2,7 +2,7 @@
 	<q-list bordered separator>
 		<q-item v-for="printer in printers" :key="printer.id">
 			<q-item-section no-wrap>
-				<q-item-label class="text-uppercase" header>{{ printer.name }}</q-item-label>
+				<q-item-label header>{{ printer.name }}</q-item-label>
 				<q-item-label class="text-body1">Драйвер: {{ printer.Driver.name }}</q-item-label>
 				<q-item-label v-if="printer.Driver.name === 'Файловый принтер'" class="text-body1">Путь к TXT файлу для записи: {{ printer.config.pathToFile }}</q-item-label>
 				<q-item-label v-else-if="printer.Driver.name === 'Сквозной TCP принтер'" class="text-body1">Порт: {{ printer.config.port }}</q-item-label>
@@ -28,7 +28,7 @@
 		<div class="col-auto"><q-btn type="submit" dense unelevated color="primary" label="выйти" to="/" /></div>
 	</div>
 
-	<q-dialog v-model="saveOrUpdatePrinterForm" persistent>
+	<q-dialog v-model="saveOrUpdatePrinterForm" full-width persistent>
 		<q-card>
 			<q-card-section>
 				<div class="text-h6 text-center">{{ titleForSaveOrUpdatePrinterForm }}</div>
@@ -52,6 +52,7 @@
 					</div>
 					<q-select outlined v-model="printerModel.dataSource" :options="dataSources" :rules="rulesForValidations.printerDataSource" label="Источник данных" />
 					<q-select outlined v-model="printerModel.template" :options="templates" :rules="rulesForValidations.printerTemplate" label="Шаблон" />
+					<q-btn v-if="printerModel.template !== 'Без шаблона'" label="редактировать шаблон" color="primary" dense unelevated @click="openTemplateEditor(printerModel.template)" />
 					<div class="row q-gutter-x-md">
 						<div class="col-auto"><q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="savePrinter" /></div>
 						<div class="col-auto"><q-btn label="отмена" type="reset" color="primary" dense unelevated @click="closeSaveOrUpdatePrinterForm" /></div>
@@ -79,6 +80,21 @@
 			</q-card-actions>
 		</q-card>
 	</q-dialog>
+
+	<q-dialog v-model="templateEditor" full-width persistent>
+		<q-card>
+			<q-card-section>
+				<div class="text-h6 text-center">Редактировать {{ template.name }}</div>
+			</q-card-section>
+			<q-card-section>
+				<q-input outlined v-model="template.template" type="textarea" />
+			</q-card-section>
+			<q-card-actions horizontal align="center">
+				<q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="saveTemplate" />
+				<q-btn label="закрыть" type="reset" color="primary" dense unelevated @click="templateEditor = false" />
+			</q-card-actions>
+		</q-card>
+	</q-dialog>
 </template>
 
 <script setup>
@@ -87,17 +103,18 @@ import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
 
-let printers = ref()
-let drivers = ref()
-let dataSources = ref()
-let dataSourcesDB
-let templates = ref()
+let printers = ref([])
+let drivers = ref([])
+let dataSources = ref([])
+let dataSourcesDB = []
+let templates = ref([])
+let templatesDB = []
 
 let deletePrinterForm = ref(false)
-let printerForDeletion = ref()
+let printerForDeletion = ref({})
 
 let saveOrUpdatePrinterForm = ref(false)
-let titleForSaveOrUpdatePrinterForm = ref()
+let titleForSaveOrUpdatePrinterForm = ref('')
 let printerModel = ref({ id: '', name: '', driver: '', ipAddress: '', port: '', dataSource: '', config: {}, template: '' })
 
 let forSpinner = ref(false)
@@ -105,6 +122,9 @@ let forSpinner = ref(false)
 let fileForWritingFilePicker = ref({})
 
 let operationOnPrinter = ''
+
+let templateEditor = ref(false)
+let template = ref({ id: '', name: '', template: '' })
 
 const rulesForValidations = ref({
 	printerName: [value => !!value || 'Введите название!'],
@@ -119,10 +139,24 @@ const rulesForValidations = ref({
 onMounted(async () => {
 	printers.value = await window.api.invoke('get-printers')
 	drivers.value = await window.api.invoke('get-drivers')
-	dataSourcesDB = (await window.api.invoke('get-data-sources'))
+	dataSourcesDB = await window.api.invoke('get-data-sources')
 	dataSources.value = dataSourcesDB.filter((dataSource) => dataSource.TypeOfDataSource.name !== 'TCP (Сквозной)').map((dataSource) => { return dataSource.name })
-	templates.value = await window.api.invoke('get-templates')
+	templatesDB = await window.api.invoke('get-templates')
+	templates.value = templatesDB.map((template) => { return template.name })
 })
+
+function openTemplateEditor(templateName) {
+	let necessaryTemplate = templatesDB.find((template) => template.name === templateName)
+	template.value = { id: necessaryTemplate.id, name: necessaryTemplate.name, template: necessaryTemplate.template }
+	templateEditor.value = true
+}
+
+async function saveTemplate() {
+	await window.api.invoke('save-template', { id: template.value.id, name: template.value.name, template: template.value.template })
+	templateEditor.value = false
+	$q.notify({ message: 'Шаблон сохранён!', type: 'positive' })
+	templatesDB = await window.api.invoke('get-templates')
+}
 
 function changeConfig() {
 	switch (printerModel.value.driver) {
