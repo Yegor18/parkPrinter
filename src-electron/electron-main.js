@@ -4,15 +4,12 @@ import os from 'os'
 import umzug from './modules/DB/migrationConf.js'
 import equipmentManager from './modules/EQUIPMENT/EquipmentManager.js'
 import { MainWindow } from './modules/helpers.js'
-
-// подключаем каналы связи
 import * as ipc from './modules/IPC/all-ipc.js'
+import dataSourceManager from './modules/DATA_SOURCES/DataSourceManager.js'
 
-// выполняем инициализацию БД
-umzug.up().then(() => {
-
-	// работа модуля с оборудованием
-	equipmentManager.start()
+umzug.up().then(async () => {
+	await equipmentManager.start()
+	await dataSourceManager.createCastDataSources()
 })
 
 // needed in case process is undefined under Linux

@@ -1,4 +1,3 @@
-import dataSourceManager from '../DATA_SOURCES/DataSourceManager.js'
 import DataSource from '../DB/models/DataSource.js'
 import Driver from '../DB/models/Driver.js'
 import Printer from '../DB/models/Printer.js'
@@ -31,7 +30,6 @@ class EquipmentManager {
 				}))
 			}, 5000)
 		}
-		await dataSourceManager.createCastDataSources(this.castPrinters)
 	}
 
 	async createCastPrinters() {
@@ -67,7 +65,6 @@ class EquipmentManager {
 				this.castPrinters[i].driver = newDriver
 				this.castPrinters[i].dataSourceId = updatedPrinter.data_source_id
 				this.castPrinters[i].template = newTemplate
-				dataSourceManager.updatePrintersInDataSource(this.castPrinters[i], 'update')
 			}
 		}
 	}
@@ -76,31 +73,24 @@ class EquipmentManager {
 		let driver = this.createDriver(driverName, newPrinter, newTemplate)
 		let printer = { id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver, template: newTemplate }
 		this.castPrinters.push(printer)
-		dataSourceManager.updatePrintersInDataSource(printer, 'add')
 	}
 
 	deleteCastPrinter(printerId) {
-		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
-		printer.driver.stop()
-		if (printer.driver instanceof EndToEndPrinterDriver) {
-			printer.driver.closeServer()
-		}
-		printer = {}
 		this.castPrinters = this.castPrinters.filter((castPrinter) => {
 			if (castPrinter.id !== printerId) {
 				return castPrinter
 			} else {
-				printer = castPrinter
+				castPrinter.driver.stop()
+				if (castPrinter.driver instanceof EndToEndPrinterDriver) {
+					castPrinter.driver.closeServer()
+				}
 			}
 		})
-		dataSourceManager.updatePrintersInDataSource(printer, 'delete')
 	}
 
 	setIsActive(printerId, isActive) {
 		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
 		this.castPrinters[this.castPrinters.indexOf(printer)].isActive = isActive
-		printer.isActive = isActive
-		dataSourceManager.updatePrintersInDataSource(printer, 'update')
 	}
 
 	createDriver(driverName, printer, template) {
@@ -119,6 +109,14 @@ class EquipmentManager {
 			case 'Сквозной TCP принтер':
 				return new EndToEndPrinterDriver(config.port)
 		}
+	}
+
+	distributeData(dataSourceId, data) {
+		this.castPrinters.forEach((castPrinter) => {
+			if (dataSourceId === castPrinter.dataSourceId && castPrinter.isActive) {
+				castPrinter.driver.write(data)
+			}
+		})
 	}
 }
 

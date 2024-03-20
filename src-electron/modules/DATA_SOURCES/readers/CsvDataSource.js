@@ -1,23 +1,18 @@
 import fs from 'fs'
-import DataSource from './DataSource.js'
+import dataSourceManager from '../DataSourceManager'
 
-class CsvDataSource extends DataSource {
-	constructor(pathToFile, pollingFrequency, printers) {
-		super(printers)
+class CsvDataSource {
+	constructor(id, type, pathToFile, pollingFrequency) {
+		this.id = id
+		this.type = type
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
 		setInterval(() => {
 			this.read()
-			for (let printer of this.printers) {
-				if (printer.driver.check()) {
-					if (this.data !== undefined) {
-						console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ CSV')
-						console.log('\nДАННЫЕ')
-						console.log(this.data)
-						printer.driver.write(this.data)
-					}
-				}
-			}
+			console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ CSV')
+			console.log('\nДАННЫЕ')
+			console.log(this.data)
+			dataSourceManager.setDataForSending(this.id, this.data)
 		}, this.pollingFrequency)
 	}
 

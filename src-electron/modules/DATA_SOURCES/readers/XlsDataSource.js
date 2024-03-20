@@ -1,21 +1,18 @@
 import readXlsxFile from 'read-excel-file/node'
-import DataSource from './DataSource.js'
+import dataSourceManager from '../DataSourceManager'
 
-class XlsDataSource extends DataSource {
-	constructor(pathToFile, pollingFrequency, printers) {
-		super(printers)
+class XlsDataSource {
+	constructor(id, type, pathToFile, pollingFrequency) {
+		this.id = id
+		this.type = type
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
 		setInterval(async () => {
 			let rows = await this.read()
-			for (let printer of this.printers) {
-				if (printer.driver.check()) {
-					console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ XLS')
-					console.log('\nДАННЫЕ')
-					console.log(rows)
-					printer.driver.write(rows)
-				}
-			}
+			console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ XLS')
+			console.log('\nДАННЫЕ')
+			console.log(rows)
+			dataSourceManager.setDataForSending(this.id, rows)
 		}, this.pollingFrequency)
 	}
 

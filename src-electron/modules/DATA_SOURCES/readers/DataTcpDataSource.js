@@ -1,10 +1,11 @@
 import net from 'node:net'
-import DataSource from './DataSource.js'
 import { MainWindow } from '../../helpers.js'
+import dataSourceManager from '../DataSourceManager.js'
 
-class DataTcpDataSource extends DataSource {
-	constructor(port, mask, printers) {
-		super(printers)
+class DataTcpDataSource {
+	constructor(id, type, port, mask) {
+		this.id = id
+		this.type = type
 		this.port = port
 		this.mask = mask
 		let server = net.createServer((client) => {
@@ -15,11 +16,7 @@ class DataTcpDataSource extends DataSource {
 					console.log(`\n===> ПОРТ ${this.port}: ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ TCP (Данные)`)
 					console.log('\nДАННЫЕ')
 					console.log(preparedData)
-					for (let printer of this.printers) {
-						if (printer.driver.check()) {
-							printer.driver.write([preparedData])
-						}
-					}
+					dataSourceManager.setDataForSending(this.id, [preparedData])
 				} else {
 					console.log(`\n===> ПОРТ ${this.port}: ПОЛУЧЕНЫ НЕВЕРНЫЕ ДАННЫЕ, ДАННЫЕ НЕЛЬЗЯ ОБРАБОТАТЬ СОГЛАСНО МАСКЕ`)
 					console.log('\nДАННЫЕ')

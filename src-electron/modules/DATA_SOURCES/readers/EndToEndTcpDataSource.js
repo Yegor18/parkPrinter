@@ -1,10 +1,11 @@
 import net from 'node:net'
-import DataSource from './DataSource.js'
 import { MainWindow } from '../../helpers.js'
+import dataSourceManager from '../DataSourceManager.js'
 
-class EndToEndTcpDataSource extends DataSource {
-	constructor(port, printers) {
-		super(printers)
+class EndToEndTcpDataSource {
+	constructor(id, type, port) {
+		this.id = id
+		this.type = type
 		this.port = port
 		let server = net.createServer((client) => {
 			client.setEncoding('utf-8')
@@ -12,11 +13,7 @@ class EndToEndTcpDataSource extends DataSource {
 				console.log(`\n===> ПОРТ ${this.port}: ОТПРАВЛЕНИЕ ДАННЫХ ИЗ TCP (Сквозной)`)
 				console.log('\nДАННЫЕ')
 				console.log(data)
-				for (let printer of this.printers) {
-					if (printer.driver.check()) {
-						printer.driver.write(data)
-					}
-				}
+				dataSourceManager.setDataForSending(this.id, [data])
 			})
 			client.on('close', () => {
 				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
