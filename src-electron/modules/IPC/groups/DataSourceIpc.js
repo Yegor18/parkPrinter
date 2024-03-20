@@ -4,6 +4,7 @@ import TypeOfDataSource from '../../DB/models/TypeOfDataSource.js'
 import { portIsOpen, unwrap } from '../../helpers.js'
 import dataSourceManager from '../../DATA_SOURCES/DataSourceManager.js'
 import { Op } from 'sequelize'
+import Printer from '../../DB/models/Printer.js'
 
 class DataSourceIpc {
 	constructor() {
@@ -54,6 +55,12 @@ class DataSourceIpc {
 			} else {
 				return 'saving-is-not-possible'
 			}
+		})
+
+		ipcMain.handle('delete-data-source', async (event, dataSourceId) => {
+			await Printer.update({ data_source_id: null }, { where: { data_source_id: dataSourceId } })
+			await DataSource.destroy({ where: { id: dataSourceId } })
+			dataSourceManager.deleteCastDataSource(dataSourceId)
 		})
 	}
 

@@ -8,7 +8,7 @@ class DataTcpDataSource {
 		this.type = type
 		this.port = port
 		this.mask = mask
-		let server = net.createServer((client) => {
+		this.server = net.createServer((client) => {
 			client.setEncoding('utf-8');
 			client.on('data', (data) => {
 				let preparedData = this.prepareData(data)
@@ -30,20 +30,29 @@ class DataTcpDataSource {
 				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
 			})
 		})
-		server.on('connection', () => {
+		this.server.on('connection', () => {
 			console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ПОДКЛЮЧИЛСЯ`)
 		})
-		server.on('close', () => {
+		this.server.on('close', () => {
 			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ЗАКРЫТ`)
 		})
-		server.on('error', (error) => {
+		this.server.on('error', (error) => {
 			console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
 			if (error.code === 'EADDRINUSE') {
 				new MainWindow().window.webContents.send('opening-port-fail', `Порт ${this.port} уже занят`)
 			}
 		})
-		server.listen(this.port, () => {
+		this.server.listen(this.port, () => {
 			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
+		})
+	}
+
+	closeServer() {
+		this.server.close((error) => {
+			if (error) {
+				console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАКРЫТИИ ПОРТА:`)
+				console.log(error)
+			}
 		})
 	}
 

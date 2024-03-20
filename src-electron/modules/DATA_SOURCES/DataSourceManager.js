@@ -19,6 +19,22 @@ class DataSourceManager {
 		})
 	}
 
+	addCastDataSource(dataSourceId, typeName, dataSourceConfig) {
+		this.castDataSources.push(this.createDataSourceConfig(dataSourceId, typeName, dataSourceConfig))
+	}
+
+	deleteCastDataSource(dataSourceId) {
+		this.castDataSources = this.castDataSources.filter((castDataSource) => {
+			if (castDataSource.id !== dataSourceId) {
+				return castDataSource
+			} else {
+				if (castDataSource instanceof DataTcpDataSource || castDataSource instanceof EndToEndTcpDataSource) {
+					castDataSource.closeServer()
+				}
+			}
+		})
+	}
+
 	createDataSourceConfig(id, typeName, dataSourceConfig) {
 		switch (typeName) {
 			case 'XLS':

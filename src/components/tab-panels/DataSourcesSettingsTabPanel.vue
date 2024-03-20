@@ -1,28 +1,26 @@
 <template>
-	<q-list>
-		<q-item>
-			<q-item-section class="col-2 text-subtitle1">Имя источника данных</q-item-section>
-			<q-item-section class="col-2 text-subtitle1">Тип источника данных</q-item-section>
-			<q-item-section class="col-auto text-subtitle1">Настройка источника данных</q-item-section>
-		</q-item>
+	<q-list bordered separator>
 		<q-item v-for="dataSource in dataSources" :key="dataSource.id">
-			<q-item-section class="col-2">{{ dataSource.name }}</q-item-section>
-			<q-item-section class="col-2">{{ dataSource.TypeOfDataSource.name }}</q-item-section>
-			<q-item-section class="col-auto">
-				<div v-if="dataSource.TypeOfDataSource.name === 'XLS' || dataSource.TypeOfDataSource.name === 'CSV'" class="row q-gutter-x-md">
-					<q-input v-model="dataSource.config.pathToFile" readonly type="text" label="Путь к файлу" outlined />
-					<q-input v-model="dataSource.config.pollingFrequency" readonly type="text" label="Частота опроса файла (мсек)" outlined />
+			<q-item-section>
+			<q-item-label header>{{ dataSource.name }}</q-item-label>
+			<q-item-label class="text-body1">Тип источника данных: {{ dataSource.TypeOfDataSource.name }}</q-item-label>
+				<div v-if="dataSource.TypeOfDataSource.name === 'XLS' || dataSource.TypeOfDataSource.name === 'CSV'">
+					<q-item-label class="text-body1">Путь к файлу: {{ dataSource.config.pathToFile }}</q-item-label>
+					<q-item-label class="text-body1">Частота опроса файла в мсек: {{ dataSource.config.pollingFrequency }}</q-item-label>
 				</div>
 				<div v-else-if="dataSource.TypeOfDataSource.name === 'API Endpoint'">
-					<q-input v-model="dataSource.config.token" readonly type="text" label="Токен" outlined />
+					<q-item-label class="text-body1">Токен: {{ dataSource.config.token }}</q-item-label>
 				</div>
-				<div v-else-if="dataSource.TypeOfDataSource.name === 'TCP (Данные)'" class="row q-gutter-x-md">
-					<q-input v-model="dataSource.config.port" readonly type="text" label="Порт" outlined />
-					<q-input v-model="dataSource.config.mask" readonly type="text" label="Маска" outlined />
+				<div v-else-if="dataSource.TypeOfDataSource.name === 'TCP (Данные)'">
+					<q-item-label class="text-body1">Порт: {{ dataSource.config.port }}</q-item-label>
+					<q-item-label class="text-body1">Маска: {{ dataSource.config.mask }}</q-item-label>
 				</div>
 				<div v-else-if="dataSource.TypeOfDataSource.name === 'TCP (Сквозной)'">
-					<q-input v-model="dataSource.config.port" readonly type="text" label="Порт" outlined />
+					<q-item-label class="text-body1">Порт: {{ dataSource.config.port }}</q-item-label>
 				</div>
+			</q-item-section>
+			<q-item-section side>
+				<q-btn type="submit" dense flat round color="negative" icon="delete" @click="openDeleteDataSourceForm(dataSource)" />
 			</q-item-section>
 		</q-item>
 	</q-list>
@@ -75,6 +73,21 @@
 			</q-card-section>
 		</q-card>
 	</q-dialog>
+
+	<q-dialog v-model="deleteDataSourceForm" persistent>
+		<q-card>
+			<q-card-section>
+				<div class="text-h6 text-center">Удалить источник данных</div>
+			</q-card-section>
+			<q-card-section>
+				<div class="text-center text-body1">Вы действительно хотите удалить источник данных {{ dataSourceForDeletion.name }}?</div>
+			</q-card-section>
+			<q-card-actions horizontal align="center">
+				<q-btn label="да" type="submit" color="negative" dense unelevated @click="deleteDataSource(dataSourceForDeletion.id)" />
+				<q-btn label="нет" type="reset" color="primary" dense unelevated @click="deleteDataSourceForm = false" />
+			</q-card-actions>
+		</q-card>
+	</q-dialog>
 </template>
 
 <script setup>
@@ -97,6 +110,9 @@ let separator2 = ref('[разделитель2]')
 const separators = [':', ';', '-', '=', ',', '_']
 let availableSeparators = ref(separators)
 
+let deleteDataSourceForm = ref(false)
+let dataSourceForDeletion = ref({})
+
 const rulesForValidations = ref({
 	dataSourceName: [value => !!value || 'Введите название!'],
 	dataSourceType: [value => !!value || 'Выберите тип!'],
@@ -110,6 +126,18 @@ onMounted(async () => {
 	dataSources.value = await window.api.invoke('get-data-sources')
 	typesOfDataSources.value = await window.api.invoke('get-types-of-data-sources')
 })
+
+function openDeleteDataSourceForm(dataSource) {
+	deleteDataSourceForm.value = true
+	dataSourceForDeletion.value = dataSource
+}
+
+async function deleteDataSource(dataSourceId) {
+	await window.api.invoke('delete-data-source', dataSourceId)
+	deleteDataSourceForm.value = false
+	dataSources.value = await window.api.invoke('get-data-sources')
+	$q.notify({ message: 'Источник данных удалён!', type: 'positive' })
+}
 
 async function testPort(serverPort) {
 	if (serverPort !== '' && serverPort >= 5000 && serverPort <= 40000) {
