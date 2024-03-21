@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import { unwrap } from '../../helpers.js'
 import Template from '../../DB/models/Template.js'
+import equipmentManager from '../../EQUIPMENT/EquipmentManager.js'
 
 class TemplateIpc {
 	constructor() {
@@ -9,8 +10,8 @@ class TemplateIpc {
 		})
 
 		ipcMain.handle('save-template', async (event, templateData) => {
-			console.log(templateData)
 			await Template.update(templateData, { where: { id: templateData.id } })
+			equipmentManager.updateTemplateData(templateData)
 		})
 	}
 }

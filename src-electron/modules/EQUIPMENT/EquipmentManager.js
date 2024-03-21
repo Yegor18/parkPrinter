@@ -41,9 +41,9 @@ class EquipmentManager {
 				isActive: printer.is_active,
 				dataSourceId: '',
 				driver: {},
-				template: printer.Template.template
+				templateData: printer.Template
 			}
-			castPrinter.driver = this.createDriver(printer.Driver.name, printer, castPrinter.template)
+			castPrinter.driver = this.createDriver(printer.Driver.name, printer, castPrinter.templateData.template)
 			if (printer.DataSource !== null) {
 				castPrinter.dataSourceId = printer.DataSource.id
 			}
@@ -53,26 +53,32 @@ class EquipmentManager {
 	}
 
 	updateCastPrinter(printerId, newDriverName, updatedPrinter, newTemplate) {
-		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
-		printer.driver.stop()
-		if (printer.driver instanceof EndToEndPrinterDriver) {
-			printer.driver.closeServer()
-		}
-		let newDriver = this.createDriver(newDriverName, updatedPrinter, newTemplate)
-		for (let i = 0; i < this.castPrinters.length; i++) {
-			if (this.castPrinters[i].id === printerId) {
-				this.castPrinters[i].isActive = false
-				this.castPrinters[i].driver = newDriver
-				this.castPrinters[i].dataSourceId = updatedPrinter.data_source_id
-				this.castPrinters[i].template = newTemplate
+		let newDriver = this.createDriver(newDriverName, updatedPrinter, newTemplate.template)
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.id === printerId) {
+				castPrinter.driver.stop()
+				if (castPrinter.driver instanceof EndToEndPrinterDriver) {
+					castPrinter.driver.closeServer()
+				}
+				castPrinter.isActive = false
+				castPrinter.driver = newDriver
+				castPrinter.dataSourceId = updatedPrinter.data_source_id
+				castPrinter.templateData = newTemplate
 			}
-		}
+		})
+		// for (let i = 0; i < this.castPrinters.length; i++) {
+		// 	if (this.castPrinters[i].id === printerId) {
+		// 		this.castPrinters[i].isActive = false
+		// 		this.castPrinters[i].driver = newDriver
+		// 		this.castPrinters[i].dataSourceId = updatedPrinter.data_source_id
+		// 		this.castPrinters[i].template = newTemplate
+		// 	}
+		// }
 	}
 
 	addCastPrinter(printerId, driverName, newPrinter, newTemplate) {
-		let driver = this.createDriver(driverName, newPrinter, newTemplate)
-		let printer = { id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver, template: newTemplate }
-		this.castPrinters.push(printer)
+		let driver = this.createDriver(driverName, newPrinter, newTemplate.template)
+		this.castPrinters.push({ id: printerId, name: newPrinter.name, isActive: false, dataSourceId: newPrinter.data_source_id, driver: driver, templateData: newTemplate })
 	}
 
 	deleteCastPrinter(printerId) {
@@ -89,8 +95,21 @@ class EquipmentManager {
 	}
 
 	setIsActive(printerId, isActive) {
-		let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
-		this.castPrinters[this.castPrinters.indexOf(printer)].isActive = isActive
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.id === printerId) {
+				castPrinter.isActive = isActive
+			}
+		})
+		// let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
+		// this.castPrinters[this.castPrinters.indexOf(printer)].isActive = isActive
+	}
+
+	updateTemplateData(templateData) {
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.templateData.id === templateData.id) {
+				castPrinter.templateData.template = templateData.template
+			}
+		})
 	}
 
 	createDriver(driverName, printer, template) {

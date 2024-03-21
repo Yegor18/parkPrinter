@@ -4,11 +4,11 @@
 			<q-item-section no-wrap>
 				<q-item-label header>{{ printer.name }}</q-item-label>
 				<q-item-label class="text-body1">Драйвер: {{ printer.Driver.name }}</q-item-label>
-				<q-item-label v-if="printer.Driver.name === 'Файловый принтер'" class="text-body1">Путь к TXT файлу для записи: {{ printer.config.pathToFile }}</q-item-label>
-				<q-item-label v-else-if="printer.Driver.name === 'Сквозной TCP принтер'" class="text-body1">Порт: {{ printer.config.port }}</q-item-label>
-				<q-item-label v-else class="text-body1">IP адрес: {{ printer.ipAddress }} Порт: {{ printer.port }}</q-item-label>
-				<q-item-label v-if="printer.DataSource.message" class="text-body1">Источник данных: {{ printer.DataSource.message }}</q-item-label>
-				<q-item-label v-else class="text-body1">Источник данных: {{ printer.DataSource.name }}</q-item-label>
+				<q-item-label class="text-body1" v-if="printer.Driver.name === 'Файловый принтер'">Путь к TXT файлу для записи: {{ printer.config.pathToFile }}</q-item-label>
+				<q-item-label class="text-body1" v-else-if="printer.Driver.name === 'Сквозной TCP принтер'">Порт: {{ printer.config.port }}</q-item-label>
+				<q-item-label class="text-body1" v-else>IP адрес: {{ printer.ipAddress }} Порт: {{ printer.port }}</q-item-label>
+				<q-item-label class="text-body1" v-if="printer.DataSource.message">Источник данных: {{ printer.DataSource.message }}</q-item-label>
+				<q-item-label class="text-body1" v-else>Источник данных: {{ printer.DataSource.name }}</q-item-label>
 				<q-item-label class="text-body1">Шаблон: {{ printer.Template.name }}</q-item-label>
 			</q-item-section>
 			<q-item-section side>
@@ -72,7 +72,7 @@
 				<div class="text-h6 text-center">Удалить принтер</div>
 			</q-card-section>
 			<q-card-section>
-				<div class="text-center text-body1">Вы действительно хотите удалить принтер <span class="text-uppercase">{{ printerForDeletion.name }}</span>?</div>
+				<div class="text-center text-body1">Вы действительно хотите удалить принтер {{ printerForDeletion.name }}?</div>
 			</q-card-section>
 			<q-card-actions horizontal align="center">
 				<q-btn label="да" type="submit" color="negative" dense unelevated @click="deletePrinter(printerForDeletion.id)" />
@@ -90,8 +90,23 @@
 				<q-input outlined v-model="template.template" type="textarea" />
 			</q-card-section>
 			<q-card-actions horizontal align="center">
-				<q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="saveTemplate" />
+				<q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="openAttentionForm" />
 				<q-btn label="закрыть" type="reset" color="primary" dense unelevated @click="templateEditor = false" />
+			</q-card-actions>
+		</q-card>
+	</q-dialog>
+
+	<q-dialog v-model="attentionForm" persistent>
+		<q-card>
+			<q-card-section>
+				<div class="text-h6 text-center">Внимание</div>
+			</q-card-section>
+			<q-card-section>
+				<div class="text-center text-body1">Этот изменённый шаблон ({{ template.name }}) могут использовать другие принтеры!</div>
+			</q-card-section>
+			<q-card-actions horizontal align="center">
+				<q-btn label="сохранить изменения" type="submit" color="primary" dense unelevated @click="saveTemplate" />
+				<q-btn label="не сохранять" type="reset" color="negative" dense unelevated @click="attentionForm = false" />
 			</q-card-actions>
 		</q-card>
 	</q-dialog>
@@ -125,6 +140,8 @@ let operationOnPrinter = ''
 
 let templateEditor = ref(false)
 let template = ref({ id: '', name: '', template: '' })
+let oldTemplate = {}
+let attentionForm = ref(false)
 
 const rulesForValidations = ref({
 	printerName: [value => !!value || 'Введите название!'],
@@ -147,15 +164,25 @@ onMounted(async () => {
 
 function openTemplateEditor(templateName) {
 	let necessaryTemplate = templatesDB.find((template) => template.name === templateName)
+	oldTemplate = necessaryTemplate
 	template.value = { id: necessaryTemplate.id, name: necessaryTemplate.name, template: necessaryTemplate.template }
 	templateEditor.value = true
 }
 
 async function saveTemplate() {
 	await window.api.invoke('save-template', { id: template.value.id, name: template.value.name, template: template.value.template })
+	attentionForm.value = false
 	templateEditor.value = false
 	$q.notify({ message: 'Шаблон сохранён!', type: 'positive' })
 	templatesDB = await window.api.invoke('get-templates')
+}
+
+function openAttentionForm() {
+	if (oldTemplate.template !== template.value.template) {
+		attentionForm.value = true
+	} else {
+		$q.notify({ message: 'Шаблон не был изменён', type: 'info' })
+	}
 }
 
 function changeConfig() {

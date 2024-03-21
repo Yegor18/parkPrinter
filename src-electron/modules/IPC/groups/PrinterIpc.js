@@ -50,10 +50,10 @@ class PrinterIpc {
 			if (printer.id === '') {
 				await Printer.create(newPrinter)
 				let printerId = unwrap(await Printer.max('id'))
-				equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter, template.template)
+				equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter, template)
 			} else {
 				await Printer.update(newPrinter, { where: { id: printer.id } })
-				equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter, template.template)
+				equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter, template)
 			}
 		})
 
