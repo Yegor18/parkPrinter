@@ -1,9 +1,20 @@
 import net from 'node:net'
 import { MainWindow } from '../../helpers.js'
 import dataSourceManager from '../DataSourceManager.js'
+import DataSource from './DataSource.js'
 
-class DataTcpDataSource {
+class DataTcpDataSource extends DataSource {
 	constructor(id, type, port, mask) {
+		super(() => {
+			console.log('\nИСТОЧНИК ДАННЫХ ВКЛЮЧАЕТСЯ')
+			this.server.listen(this.port, () => {
+				console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
+			})
+		},
+			() => {
+				console.log('\nИСТОЧНИК ДАННЫХ ВЫКЛЮЧАЕТСЯ')
+				this.closeServer()
+			})
 		this.id = id
 		this.type = type
 		this.port = port
@@ -41,9 +52,6 @@ class DataTcpDataSource {
 			if (error.code === 'EADDRINUSE') {
 				new MainWindow().window.webContents.send('opening-port-fail', `Порт ${this.port} уже занят`)
 			}
-		})
-		this.server.listen(this.port, () => {
-			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
 		})
 	}
 

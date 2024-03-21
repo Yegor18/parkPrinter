@@ -28,9 +28,7 @@ class DataSourceManager {
 			if (castDataSource.id !== dataSourceId) {
 				return castDataSource
 			} else {
-				if (castDataSource instanceof DataTcpDataSource || castDataSource instanceof EndToEndTcpDataSource) {
-					castDataSource.closeServer()
-				}
+				castDataSource.stop()
 			}
 		})
 	}
@@ -50,6 +48,22 @@ class DataSourceManager {
 
 	setDataForSending(dataSourceId, data) {
 		equipmentManager.distributeData(dataSourceId, data)
+	}
+
+	turnOnDataSource(dataSourceId) {
+		this.castDataSources.forEach((castDataSource) => {
+			if (castDataSource.id === dataSourceId && !castDataSource.isStarted) {
+				castDataSource.start()
+			}
+		})
+	}
+
+	turnOffDataSource(dataSourceId) {
+		this.castDataSources.forEach((castDataSource) => {
+			if (castDataSource.id === dataSourceId && castDataSource.isStarted) {
+				castDataSource.stop()
+			}
+		})
 	}
 }
 

@@ -1,19 +1,27 @@
 import fs from 'fs'
-import dataSourceManager from '../DataSourceManager'
+import dataSourceManager from '../DataSourceManager.js'
+import DataSource from './DataSource.js'
 
-class CsvDataSource {
+class CsvDataSource extends DataSource {
 	constructor(id, type, pathToFile, pollingFrequency) {
+		super(() => {
+			console.log('\nИСТОЧНИК ДАННЫХ ВКЛЮЧАЕТСЯ')
+			this.timer = setInterval(() => {
+				this.read()
+				console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ CSV')
+				console.log('\nДАННЫЕ')
+				console.log(this.data)
+				dataSourceManager.setDataForSending(this.id, this.data)
+			}, this.pollingFrequency)
+		},
+			() => {
+				console.log('\nИСТОЧНИК ДАННЫХ ВЫКЛЮЧАЕТСЯ')
+				clearInterval(this.timer)
+			})
 		this.id = id
 		this.type = type
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
-		setInterval(() => {
-			this.read()
-			console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ CSV')
-			console.log('\nДАННЫЕ')
-			console.log(this.data)
-			dataSourceManager.setDataForSending(this.id, this.data)
-		}, this.pollingFrequency)
 	}
 
 	read() {
