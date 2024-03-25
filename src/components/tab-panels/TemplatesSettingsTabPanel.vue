@@ -27,7 +27,7 @@
 			</q-card-section>
 			<q-card-actions horizontal align="center">
 				<q-btn label="сохранить" type="submit" color="primary" dense unelevated @click="saveTemplate" />
-				<q-btn label="закрыть" type="reset" color="primary" dense unelevated @click="templateEditor = false" />
+				<q-btn label="закрыть" type="reset" color="primary" dense unelevated @click="closeTemplateEditor" />
 			</q-card-actions>
 		</q-card>
 	</q-dialog>
@@ -100,8 +100,14 @@ function openDeleteTemplateForm(template) {
 	deleteTemplateForm.value = true
 }
 
+function closeTemplateEditor() {
+	editableTemplate.value = { id: '', name: '', template: '' }
+	templateEditor.value = false
+}
+
 async function deleteTemplate() {
 	await window.api.invoke('delete-template', templateForDeletion.value.id)
+	$q.notify({ message: 'Шаблон удалён!', type: 'positive' })
 	deleteTemplateForm.value = false
 	await getValidTemplates()
 }

@@ -20,9 +20,10 @@ class TemplateIpc {
 		})
 
 		ipcMain.handle('delete-template', async (event, templateId) => {
-			let templateIdWithoutTemplate = unwrap(await Template.findOne({ where: { name: 'Без шаблона' } })).id
-			await Printer.update({ template_id: templateIdWithoutTemplate }, { where: { template_id: templateId } })
+			let emptyTemplate = unwrap(await Template.findOne({ where: { name: 'Без шаблона' } }))
+			await Printer.update({ template_id: emptyTemplate.id }, { where: { template_id: templateId } })
 			await Template.destroy({ where: { id: templateId } })
+			equipmentManager.setEmptyTemplate(templateId, emptyTemplate)
 		})
 	}
 }

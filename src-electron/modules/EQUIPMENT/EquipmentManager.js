@@ -115,6 +115,26 @@ class EquipmentManager {
 		})
 	}
 
+	setEmptyTemplate(oldTemplateId, emptyTemplateData) {
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.templateData.id === oldTemplateId) {
+				castPrinter.templateData = emptyTemplateData
+				if (castPrinter.driver.template !== undefined) {
+					castPrinter.driver.template = emptyTemplateData.template
+				}
+			}
+		})
+	}
+
+	setEmptyDataSource(oldDataSourceId) {
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.dataSourceId === oldDataSourceId) {
+				castPrinter.dataSourceId = ''
+			}
+		})
+		console.log(this.castPrinters)
+	}
+
 	createDriver(driverName, printer, template) {
 		let ipAddress = printer.ipAddress
 		let port = printer.port

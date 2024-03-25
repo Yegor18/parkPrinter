@@ -5,6 +5,7 @@ import { portIsOpen, unwrap } from '../../helpers.js'
 import dataSourceManager from '../../DATA_SOURCES/DataSourceManager.js'
 import { Op } from 'sequelize'
 import Printer from '../../DB/models/Printer.js'
+import equipmentManager from '../../EQUIPMENT/EquipmentManager.js'
 
 class DataSourceIpc {
 	constructor() {
@@ -61,6 +62,7 @@ class DataSourceIpc {
 			await Printer.update({ data_source_id: null }, { where: { data_source_id: dataSourceId } })
 			await DataSource.destroy({ where: { id: dataSourceId } })
 			dataSourceManager.deleteCastDataSource(dataSourceId)
+			equipmentManager.setEmptyDataSource(dataSourceId)
 		})
 	}
 
