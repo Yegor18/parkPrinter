@@ -170,7 +170,7 @@ function openTemplateEditor(templateName) {
 }
 
 async function saveTemplate() {
-	await window.api.invoke('save-template', { id: template.value.id, name: template.value.name, template: template.value.template })
+	await window.api.invoke('update-template', { id: template.value.id, name: template.value.name, template: template.value.template })
 	attentionForm.value = false
 	templateEditor.value = false
 	$q.notify({ message: 'Шаблон сохранён!', type: 'positive' })
