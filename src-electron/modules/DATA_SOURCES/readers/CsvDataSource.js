@@ -29,7 +29,7 @@ class CsvDataSource extends DataSource {
 		if (checkFile(this.pathToFile)) {
 			fs.readFile(this.pathToFile, { encoding: 'utf-8' }, (error, data) => {
 				if (!error) {
-					let rows = data.split('\"').filter((row) => row !== '' && row !== '\r\n')
+					let rows = data.split('\r\n')
 					let namesOfVariables = rows[0].split(',')
 					let result = []
 					for (let i = 1; i < rows.length; i++) {
@@ -40,7 +40,7 @@ class CsvDataSource extends DataSource {
 						}
 						result.push(resultRow)
 					}
-					this.writeData(result)
+					this.data = result
 				} else {
 					console.log(error)
 				}
@@ -49,10 +49,6 @@ class CsvDataSource extends DataSource {
 			this.stop()
 			new MainWindow().window.webContents.send('file-does-not-exist', `Файл ${this.pathToFile} не существует!`)
 		}
-	}
-
-	writeData(data) {
-		this.data = data
 	}
 }
 
