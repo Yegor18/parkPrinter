@@ -9,6 +9,7 @@ import FilePrinterDriver from './drivers/FilePrinterDriver.js'
 import LogopackDriver from './drivers/LogopackDriver.js'
 import WindowsDriver from './drivers/WindowsDriver.js'
 import { MainWindow } from '../helpers.js'
+import dataSourceManager from '../DATA_SOURCES/DataSourceManager.js'
 
 class EquipmentManager {
 	constructor() {
@@ -29,6 +30,11 @@ class EquipmentManager {
 					return ` ${failedPrinter.name} (${failedPrinter.driver.ipAddress}:${failedPrinter.driver.port})`
 				}))
 			}, 5000)
+		}
+		for (let castPrinter of this.castPrinters) {
+			if (castPrinter.isActive) {
+				dataSourceManager.turnOnDataSource(castPrinter.dataSourceId)
+			}
 		}
 	}
 
@@ -57,23 +63,16 @@ class EquipmentManager {
 		this.castPrinters.forEach((castPrinter) => {
 			if (castPrinter.id === printerId) {
 				castPrinter.driver.stop()
+				castPrinter.isActive = false
+				this.requestToTurnOffDataSource(castPrinter)
 				if (castPrinter.driver instanceof EndToEndPrinterDriver) {
 					castPrinter.driver.closeServer()
 				}
-				castPrinter.isActive = false
 				castPrinter.driver = newDriver
 				castPrinter.dataSourceId = updatedPrinter.data_source_id
 				castPrinter.templateData = newTemplate
 			}
 		})
-		// for (let i = 0; i < this.castPrinters.length; i++) {
-		// 	if (this.castPrinters[i].id === printerId) {
-		// 		this.castPrinters[i].isActive = false
-		// 		this.castPrinters[i].driver = newDriver
-		// 		this.castPrinters[i].dataSourceId = updatedPrinter.data_source_id
-		// 		this.castPrinters[i].template = newTemplate
-		// 	}
-		// }
 	}
 
 	addCastPrinter(printerId, driverName, newPrinter, newTemplate) {
@@ -90,6 +89,7 @@ class EquipmentManager {
 				if (castPrinter.driver instanceof EndToEndPrinterDriver) {
 					castPrinter.driver.closeServer()
 				}
+				this.requestToTurnOffDataSource(castPrinter)
 			}
 		})
 	}
@@ -98,10 +98,13 @@ class EquipmentManager {
 		this.castPrinters.forEach((castPrinter) => {
 			if (castPrinter.id === printerId) {
 				castPrinter.isActive = isActive
+				if (isActive) {
+					this.requestToTurnOnDataSource(castPrinter)
+				} else {
+					this.requestToTurnOffDataSource(castPrinter)
+				}
 			}
 		})
-		// let printer = this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
-		// this.castPrinters[this.castPrinters.indexOf(printer)].isActive = isActive
 	}
 
 	updateTemplateData(templateData) {
@@ -136,6 +139,35 @@ class EquipmentManager {
 				castPrinter.driver.write(data)
 			}
 		})
+	}
+
+	requestToTurnOnDataSource(printer) {
+		console.log(`\nЗАПРОС НА ВКЛЮЧЕНИЕ ИСТОЧНИКА ДАННЫХ С id ${printer.dataSourceId}`)
+		let count = 0
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.isActive && castPrinter.dataSourceId === printer.dataSourceId) {
+				count++
+			}
+		})
+		if (count > 0) {
+			dataSourceManager.turnOnDataSource(printer.dataSourceId)
+		}
+	}
+
+	requestToTurnOffDataSource(printer) {
+		console.log(`\nЗАПРОС НА ОТКЛЮЧЕНИЕ ИСТОЧНИКА ДАННЫХ С id ${printer.dataSourceId}`)
+		let workingPrinters = 0
+		let stoppedPrinters = 0
+		this.castPrinters.forEach((castPrinter) => {
+			if (castPrinter.isActive && castPrinter.dataSourceId === printer.dataSourceId) {
+				workingPrinters++
+			} else if (!castPrinter.isActive && castPrinter.dataSourceId === printer.dataSourceId) {
+				stoppedPrinters++
+			}
+		})
+		if (workingPrinters === 0 && stoppedPrinters > 0) {
+			dataSourceManager.turnOffDataSource(printer.dataSourceId)
+		}
 	}
 }
 

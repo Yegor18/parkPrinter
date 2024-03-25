@@ -8,8 +8,8 @@ import * as ipc from './modules/IPC/all-ipc.js'
 import dataSourceManager from './modules/DATA_SOURCES/DataSourceManager.js'
 
 umzug.up().then(async () => {
-	await equipmentManager.start()
 	await dataSourceManager.createCastDataSources()
+	await equipmentManager.start()
 })
 
 // needed in case process is undefined under Linux

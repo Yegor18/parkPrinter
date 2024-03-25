@@ -29,18 +29,23 @@ export default class FilePrinterDriver {
 			console.log('\nШАБЛОН')
 			console.log(this.template)
 			for (let row of data) {
-				let completedTemplate = this.template
-				let arrayOfVarNames = Object.keys(row)
-				for (let varName of arrayOfVarNames) {
-					while (completedTemplate.includes('${' + varName + '}')) {
-						completedTemplate = completedTemplate.replace('${' + varName + '}', row[varName])
+				let completedTemplate = ''
+				if (this.template !== '') {
+					completedTemplate = this.template
+					let arrayOfVarNames = Object.keys(row)
+					for (let varName of arrayOfVarNames) {
+						while (completedTemplate.includes('${' + varName + '}')) {
+							completedTemplate = completedTemplate.replace('${' + varName + '}', row[varName])
+						}
 					}
-				}
-				while (completedTemplate.includes(completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}')))) {
-					completedTemplate = completedTemplate.replace(completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}') + 1), '')
-					if (completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}')) === '') {
-						break
+					while (completedTemplate.includes(completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}')))) {
+						completedTemplate = completedTemplate.replace(completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}') + 1), '')
+						if (completedTemplate.substring(completedTemplate.indexOf('${'), completedTemplate.indexOf('}')) === '') {
+							break
+						}
 					}
+				} else {
+					completedTemplate = JSON.stringify(row)
 				}
 				console.log('\nЗАПОЛНЕННЫЙ ШАБЛОН')
 				console.log(completedTemplate)
