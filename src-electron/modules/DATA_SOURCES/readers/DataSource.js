@@ -7,11 +7,11 @@ export default class DataSource {
 
 	start() {
 		this.isStarted = true
-		onStarted()
+		this.onStarted()
 	}
 
-	stop(onStopped) {
+	stop() {
 		this.isStarted = false
-		onStopped()
+		this.onStopped()
 	}
 }

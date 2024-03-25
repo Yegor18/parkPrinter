@@ -1,6 +1,7 @@
 import readXlsxFile from 'read-excel-file/node'
 import dataSourceManager from '../DataSourceManager.js'
 import DataSource from './DataSource.js'
+import { MainWindow, checkFile } from '../../helpers.js'
 
 class XlsDataSource extends DataSource {
 	constructor(id, type, pathToFile, pollingFrequency) {
@@ -25,12 +26,17 @@ class XlsDataSource extends DataSource {
 	}
 
 	async read() {
-		let namesOfVariables = (await readXlsxFile(this.pathToFile)).at(0)
-		let map = {}
-		namesOfVariables.forEach((name) => {
-			map[name] = name
-		})
-		return (await readXlsxFile(this.pathToFile, { map })).rows
+		if (checkFile(this.pathToFile)) {
+			let namesOfVariables = (await readXlsxFile(this.pathToFile)).at(0)
+			let map = {}
+			namesOfVariables.forEach((name) => {
+				map[name] = name
+			})
+			return (await readXlsxFile(this.pathToFile, { map })).rows
+		} else {
+			this.stop()
+			new MainWindow().window.webContents.send('file-does-not-exist', `Файл ${this.pathToFile} не существует!`)
+		}
 	}
 }
 

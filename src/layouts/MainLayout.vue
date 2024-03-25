@@ -29,5 +29,8 @@ onMounted(() => {
 	window.api.on('opening-port-fail', (event, message) => {
 		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
 	})
+	window.api.on('file-does-not-exist', (event, message) => {
+		$q.notify({ message: message, type: 'warning', timeout: 0, group: false, actions: [{ label: 'принято', color: 'dark' }] })
+	})
 })
 </script>

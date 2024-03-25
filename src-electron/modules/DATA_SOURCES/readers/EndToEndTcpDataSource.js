@@ -45,12 +45,14 @@ class EndToEndTcpDataSource extends DataSource {
 	}
 
 	closeServer() {
-		this.server.close((error) => {
-			if (error) {
-				console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАКРЫТИИ ПОРТА:`)
-				console.log(error)
-			}
-		})
+		if (this.server.listening) {
+			this.server.close((error) => {
+				if (error) {
+					console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАКРЫТИИ ПОРТА:`)
+					console.log(error)
+				}
+			})
+		}
 	}
 }
 
