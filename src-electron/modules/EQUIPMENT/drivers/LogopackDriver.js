@@ -1,6 +1,6 @@
-import Equipment from './Equipment.js'
+import TCPIPEquipment from './TCPIPEquipment.js'
 
-export default class LogopackDriver extends Equipment {
+export default class LogopackDriver extends TCPIPEquipment {
 	constructor(ipAddress, port) {
 		super(ipAddress, port)
 	}

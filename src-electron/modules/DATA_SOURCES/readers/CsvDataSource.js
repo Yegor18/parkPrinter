@@ -1,54 +1,40 @@
-import fs from 'fs'
+import fs from 'node:fs/promises'
 import dataSourceManager from '../DataSourceManager.js'
 import DataSource from './DataSource.js'
 import { MainWindow, checkFile } from '../../helpers.js'
 
 class CsvDataSource extends DataSource {
 	constructor(id, type, pathToFile, pollingFrequency) {
-		super(() => {
-			console.log('\nИСТОЧНИК ДАННЫХ ВКЛЮЧАЕТСЯ')
-			this.timer = setInterval(() => {
-				this.read()
-				console.log('\n===> ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ CSV')
-				console.log('\nДАННЫЕ')
-				console.log(this.data)
-				dataSourceManager.setDataForSending(this.id, this.data)
-			}, this.pollingFrequency)
-		},
-			() => {
-				console.log('\nИСТОЧНИК ДАННЫХ ВЫКЛЮЧАЕТСЯ')
-				clearInterval(this.timer)
-			})
+		super()
 		this.id = id
 		this.type = type
 		this.pathToFile = pathToFile
 		this.pollingFrequency = pollingFrequency
 	}
 
-	read() {
-		if (checkFile(this.pathToFile)) {
-			fs.readFile(this.pathToFile, { encoding: 'utf-8' }, (error, data) => {
-				if (!error) {
-					let rows = data.split('\r\n')
-					let namesOfVariables = rows[0].split(',')
-					let result = []
-					for (let i = 1; i < rows.length; i++) {
-						let arrayOfValuesInRow = rows[i].split(',')
-						let resultRow = {}
-						for (let j = 0; j < arrayOfValuesInRow.length; j++) {
-							resultRow[namesOfVariables[j]] = arrayOfValuesInRow[j]
-						}
-						result.push(resultRow)
+	isValid() {
+		return checkFile(this.pathToFile)
+	}
+	//Файл читается синхронно. Почему? Если файл большой data будет всегда undefined
+	//Обязательно протестировать большие файлы!!! Попробовать дробить большие файлы на части поменьше
+	async read() {
+			try {
+				const data = await fs.readFile(this.pathToFile, { encoding: 'utf8' });
+				let rows = data.split('\r\n')
+				let namesOfVariables = rows[0].split(',')
+				let result = []
+				for (let i = 1; i < rows.length; i++) {
+					let arrayOfValuesInRow = rows[i].split(',')
+					let resultRow = {}
+					for (let j = 0; j < arrayOfValuesInRow.length; j++) {
+						resultRow[namesOfVariables[j]] = arrayOfValuesInRow[j]
 					}
-					this.data = result
-				} else {
-					console.log(error)
+					result.push(resultRow)
 				}
-			})
-		} else {
-			this.stop()
-			new MainWindow().window.webContents.send('file-does-not-exist', `Файл ${this.pathToFile} не существует!`)
-		}
+				return result
+			} catch (err) {
+				console.log(err);
+			}
 	}
 }
 

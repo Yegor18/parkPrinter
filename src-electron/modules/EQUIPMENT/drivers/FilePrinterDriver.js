@@ -1,24 +1,15 @@
 import fs from 'fs'
+import Equipment from "app/src-electron/modules/EQUIPMENT/drivers/Equipment";
+export default class FilePrinterDriver extends Equipment {
 
-export default class FilePrinterDriver {
 	constructor(pathToFile, template) {
+		super()
 		this.pathToFile = pathToFile
 		this.template = template
-		this.isStarted = false
 	}
-
-	start() {
-		this.isStarted = true
+	start(dataSourceId) {
+		//this.setDataSourceIsActive(dataSourceId,true)
 		return true
-	}
-
-	stop() {
-		this.isStarted = false
-		return true
-	}
-
-	check() {
-		return this.isStarted
 	}
 
 	write(data) {

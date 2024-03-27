@@ -12,6 +12,12 @@ class DataSourceManager {
 		this.castDataSources = []
 	}
 
+	get(dataSourceId) {
+		return this.castDataSources.find((castDataSource) =>
+		   castDataSource.id === dataSourceId
+		)
+	}
+
 	async createCastDataSources() {
 		let dataSources = unwrap(await DataSource.findAll({ include: { model: TypeOfDataSource } }))
 		this.castDataSources = dataSources.map((dataSource) => {

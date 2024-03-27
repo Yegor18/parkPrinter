@@ -16,25 +16,47 @@ class EquipmentManager {
 		this.castPrinters = []
 	}
 
+	//при отключении принтера ничего не происходит!!!
 	async start() {
 		await this.createCastPrinters()
-		let failedPrinters = []
-		for (let castPrinter of this.castPrinters) {
-			if (castPrinter.isActive && !(await castPrinter.driver.start())) {
-				failedPrinters.push(castPrinter)
-			}
+		let activePrinters = this.castPrinters.filter((printer) => printer.isActive)
+		for (let printer of activePrinters) {
+			this.sendDataSourceToPrinter(printer.id,printer.dataSourceId)
 		}
-		if (failedPrinters.length !== 0) {
-			setTimeout(() => {
-				new MainWindow().window.webContents.send('failed-connections', 'Не удалось подключиться к принтерам: ' + failedPrinters.map((failedPrinter) => {
-					return ` ${failedPrinter.name} (${failedPrinter.driver.ipAddress}:${failedPrinter.driver.port})`
-				}))
-			}, 5000)
-		}
-		for (let castPrinter of this.castPrinters) {
-			if (castPrinter.isActive) {
-				dataSourceManager.turnOnDataSource(castPrinter.dataSourceId)
+	}
+
+	getPrinter(printerId) {
+		return this.castPrinters.find((castPrinter) => castPrinter.id === printerId)
+	}
+
+	sendDataSourceToPrinter(printerId,dataSourceId) {
+		const printer = this.getPrinter(printerId)
+		const dataSource = dataSourceManager.get(dataSourceId)
+		dataSource.timer = setInterval(async () => {
+			const isPrinterConnect = printer.driver.isConnected()
+			const isDataSourceValid = dataSource.isValid()
+			if (isPrinterConnect && isDataSourceValid) {
+				const data =await dataSource.read()
+				printer.driver.write(data)
+			} else {
+				clearInterval(dataSource.timer)
+				new MainWindow().window.webContents.send('failed-connections', 'Не удалось отправить данные на принтер: ' +
+					` ${printer.name} (${printer.driver.ipAddress}:${printer.driver.port})`)
 			}
+		}, dataSource.pollingFrequency)
+
+	}
+
+	async turnOffPrinterAndDataSource(printerId,dataSourceId) {
+		const printer = this.getPrinter(printerId)
+		const dataSource = dataSourceManager.get(dataSourceId)
+		const isPrinterConnect = printer.driver.isConnected()
+		const isDataSourceValid = dataSource.isValid()
+		if (isPrinterConnect) {
+			const isPrinterStopped = printer.stop()
+		}
+		if (isDataSourceValid) {
+			clearInterval(dataSource.timer)
 		}
 	}
 
@@ -58,21 +80,20 @@ class EquipmentManager {
 		this.castPrinters = castPrinters
 	}
 
-	updateCastPrinter(printerId, newDriverName, updatedPrinter, newTemplate) {
+	async updateCastPrinter(printerId, newDriverName, updatedPrinter, newTemplate) {
 		let newDriver = this.createDriver(newDriverName, updatedPrinter, newTemplate.template)
-		this.castPrinters.forEach((castPrinter) => {
-			if (castPrinter.id === printerId) {
-				castPrinter.driver.stop()
-				castPrinter.isActive = false
-				this.requestToTurnOffDataSource(castPrinter)
-				if (castPrinter.driver instanceof EndToEndPrinterDriver) {
-					castPrinter.driver.closeServer()
+		let printer = this.getPrinter(printerId)
+		if (printer) {
+			printer.driver.stop()
+			printer.isActive = false
+				this.turnOffPrinterAndDataSource(printer)
+				if (printer.driver instanceof EndToEndPrinterDriver) {
+					printer.driver.closeServer()
 				}
-				castPrinter.driver = newDriver
-				castPrinter.dataSourceId = updatedPrinter.data_source_id
-				castPrinter.templateData = newTemplate
+			printer.driver = newDriver
+			printer.dataSourceId = updatedPrinter.data_source_id
+			printer.templateData = newTemplate
 			}
-		})
 	}
 
 	addCastPrinter(printerId, driverName, newPrinter, newTemplate) {
@@ -81,30 +102,14 @@ class EquipmentManager {
 	}
 
 	deleteCastPrinter(printerId) {
-		this.castPrinters = this.castPrinters.filter((castPrinter) => {
-			if (castPrinter.id !== printerId) {
-				return castPrinter
-			} else {
-				castPrinter.driver.stop()
-				if (castPrinter.driver instanceof EndToEndPrinterDriver) {
-					castPrinter.driver.closeServer()
-				}
-				this.requestToTurnOffDataSource(castPrinter)
+		let printer = this.getPrinter(printerId)
+		if (printer) {
+			printer.driver.stop()
+			if (printer.driver instanceof EndToEndPrinterDriver) {
+				printer.driver.closeServer()
 			}
-		})
-	}
-
-	setIsActive(printerId, isActive) {
-		this.castPrinters.forEach((castPrinter) => {
-			if (castPrinter.id === printerId) {
-				castPrinter.isActive = isActive
-				if (isActive) {
-					this.requestToTurnOnDataSource(castPrinter)
-				} else {
-					this.requestToTurnOffDataSource(castPrinter)
-				}
-			}
-		})
+			this.turnOffPrinterAndDataSource(printer)
+		}
 	}
 
 	updateTemplateData(templateData) {
@@ -150,43 +155,6 @@ class EquipmentManager {
 				return new FilePrinterDriver(config.pathToFile, template)
 			case 'Сквозной TCP принтер':
 				return new EndToEndPrinterDriver(config.port)
-		}
-	}
-
-	distributeData(dataSourceId, data) {
-		this.castPrinters.forEach((castPrinter) => {
-			if (dataSourceId === castPrinter.dataSourceId && castPrinter.isActive) {
-				castPrinter.driver.write(data)
-			}
-		})
-	}
-
-	requestToTurnOnDataSource(printer) {
-		console.log(`\nЗАПРОС НА ВКЛЮЧЕНИЕ ИСТОЧНИКА ДАННЫХ С id ${printer.dataSourceId}`)
-		let count = 0
-		this.castPrinters.forEach((castPrinter) => {
-			if (castPrinter.isActive && castPrinter.dataSourceId === printer.dataSourceId) {
-				count++
-			}
-		})
-		if (count > 0) {
-			dataSourceManager.turnOnDataSource(printer.dataSourceId)
-		}
-	}
-
-	requestToTurnOffDataSource(printer) {
-		console.log(`\nЗАПРОС НА ОТКЛЮЧЕНИЕ ИСТОЧНИКА ДАННЫХ С id ${printer.dataSourceId}`)
-		let workingPrinters = 0
-		let stoppedPrinters = 0
-		this.castPrinters.forEach((castPrinter) => {
-			if (castPrinter.isActive && castPrinter.dataSourceId === printer.dataSourceId) {
-				workingPrinters++
-			} else if (!castPrinter.isActive && castPrinter.dataSourceId === printer.dataSourceId) {
-				stoppedPrinters++
-			}
-		})
-		if (workingPrinters === 0 && stoppedPrinters > 0) {
-			dataSourceManager.turnOffDataSource(printer.dataSourceId)
 		}
 	}
 }

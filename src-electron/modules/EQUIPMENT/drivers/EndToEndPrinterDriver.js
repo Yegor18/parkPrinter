@@ -1,8 +1,8 @@
 import net from 'node:net'
-import Equipment from './Equipment.js'
+import TCPIPEquipment from './TCPIPEquipment.js'
 import { MainWindow } from '../../helpers.js'
 
-export default class EndToEndPrinterDriver extends Equipment {
+export default class EndToEndPrinterDriver extends TCPIPEquipment {
 	constructor(port) {
 		super('localhost', port)
 		this.port = port

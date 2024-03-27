@@ -68,22 +68,27 @@ class PrinterIpc {
 			let result = await tcpPingPort(printerIpAddress, printerPort)
 			return result.online
 		})
-		
+
 		// включение и отключение принтера
-		ipcMain.handle('turn-on-off-printer', async (event, { printerId, operation }) => {
+		//принтеры подключаются и отключаются при старте приложения или при нажатии на кнопку.
+		//соответственно функция обработки должна быть одна
+		ipcMain.handle('turn-on-off-printer', async (event, {options, operation }) => {
+			let {printerId,dataSourceId} = options
+			console.log("equipmentManager.castPrinters ",equipmentManager.castPrinters)
 			let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver
 			if (operation === 'on') {
-				if (!driverModel.check() && await driverModel.start()) {
+				if ((!driverModel.check() && await driverModel.start())|| (driverModel.constructor.name === 'FilePrinterDriver') ) {
 					await Printer.update({ is_active: true }, { where: { id: printerId } })
-					equipmentManager.setIsActive(printerId, true)
-					return { type: 'ok-on', message: 'Подключение установлено!' }
+					//Пишем геттер для менеджера
+					equipmentManager.sendDataSourceToPrinter(printerId,dataSourceId)
+					return { type: 'ok-on', message: 'Данные отправлены!' }
 				} else {
-					return { type: 'error-on', message: 'Не удалось подключиться!' }
+					return { type: 'error-on', message: 'Не удалось отправить данные!' }
 				}
 			} else if (operation === 'off') {
-				if (driverModel.check() && driverModel.stop()) {
+				if ((driverModel.check() && driverModel.stop()) || (driverModel.constructor.name === 'FilePrinterDriver') ) {
 					await Printer.update({ is_active: false }, { where: { id: printerId } })
-					equipmentManager.setIsActive(printerId, false)
+					equipmentManager.turnOffPrinterAndDataSource(printerId,dataSourceId)
 					return { type: 'ok-off', message: 'Отключение выполнить удалось!' }
 				} else {
 					return { type: 'error-off', message: 'Возникла ошибка, проверьте все подключения!' }

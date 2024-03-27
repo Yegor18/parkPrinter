@@ -18,8 +18,8 @@
 				<q-btn type="submit" dense unelevated color="primary" label="изменить" @click="openSaveOrUpdatePrinterForm(printer, 'edit-printer')" />
 			</q-item-section>
 			<q-item-section side>
-				<q-btn type="submit" dense unelevated color="positive" icon="play_arrow" push v-if="!printer.is_active" @click="turnOnOffPrinter(printer.id, 'on')" />
-				<q-btn type="submit" dense unelevated color="negative" icon="pause" push v-else @click="turnOnOffPrinter(printer.id, 'off')" />
+				<q-btn type="submit" dense unelevated color="positive" icon="play_arrow" push v-if="!printer.is_active" @click="turnOnOffPrinter({		printerId:printer.id,dataSourceId:printer.data_source_id}, 'on')" />
+				<q-btn type="submit" dense unelevated color="negative" icon="pause" push v-else @click="turnOnOffPrinter({		printerId:printer.id,dataSourceId:printer.data_source_id}, 'off')" />
 			</q-item-section>
 		</q-item>
 	</q-list>
@@ -307,8 +307,9 @@ async function checkFile(pathToFile) {
 	}
 }
 
-async function turnOnOffPrinter(printerId, operation) {
-	let result = await window.api.invoke('turn-on-off-printer', { printerId: printerId, operation: operation })
+async function turnOnOffPrinter(options, operation) {
+	let result = await window.api.invoke('turn-on-off-printer', {
+	options, operation })
 	switch (result.type) {
 		case 'ok-on':
 			$q.notify({ message: result.message, type: 'positive' })
