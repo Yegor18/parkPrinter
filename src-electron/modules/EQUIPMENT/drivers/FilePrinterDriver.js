@@ -1,5 +1,7 @@
 import fs from 'fs'
 import Equipment from "app/src-electron/modules/EQUIPMENT/drivers/Equipment";
+import {checkFile} from "app/src-electron/modules/helpers";
+
 export default class FilePrinterDriver extends Equipment {
 
 	constructor(pathToFile, template) {
@@ -7,9 +9,12 @@ export default class FilePrinterDriver extends Equipment {
 		this.pathToFile = pathToFile
 		this.template = template
 	}
-	start(dataSourceId) {
-		//this.setDataSourceIsActive(dataSourceId,true)
+
+	stop() {
 		return true
+	}
+	start() {
+		return checkFile(this.pathToFile)
 	}
 
 	write(data) {

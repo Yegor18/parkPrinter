@@ -33,7 +33,7 @@ class EquipmentManager {
 		const printer = this.getPrinter(printerId)
 		const dataSource = dataSourceManager.get(dataSourceId)
 		dataSource.timer = setInterval(async () => {
-			const isPrinterConnect = printer.driver.isConnected()
+			const isPrinterConnect = printer.driver.start()
 			const isDataSourceValid = dataSource.isValid()
 			if (isPrinterConnect && isDataSourceValid) {
 				const data =await dataSource.read()
@@ -50,7 +50,7 @@ class EquipmentManager {
 	async turnOffPrinterAndDataSource(printerId,dataSourceId) {
 		const printer = this.getPrinter(printerId)
 		const dataSource = dataSourceManager.get(dataSourceId)
-		const isPrinterConnect = printer.driver.isConnected()
+		const isPrinterConnect = printer.driver.start()
 		const isDataSourceValid = dataSource.isValid()
 		if (isPrinterConnect) {
 			const isPrinterStopped = printer.stop()
@@ -86,7 +86,7 @@ class EquipmentManager {
 		if (printer) {
 			printer.driver.stop()
 			printer.isActive = false
-				this.turnOffPrinterAndDataSource(printer)
+				this.turnOffPrinterAndDataSource(printerId,printer.dataSourceId)
 				if (printer.driver instanceof EndToEndPrinterDriver) {
 					printer.driver.closeServer()
 				}
@@ -108,7 +108,7 @@ class EquipmentManager {
 			if (printer.driver instanceof EndToEndPrinterDriver) {
 				printer.driver.closeServer()
 			}
-			this.turnOffPrinterAndDataSource(printer)
+			this.turnOffPrinterAndDataSource(printerId,printer.dataSourceId)
 		}
 	}
 
