@@ -1,6 +1,5 @@
 import net from 'node:net'
 import { tcpPingPort } from 'tcp-ping-port'
-import dataSourceManager from "app/src-electron/modules/DATA_SOURCES/DataSourceManager";
 import Equipment from "app/src-electron/modules/EQUIPMENT/drivers/Equipment";
 
 // сделать геттер на принтеры по id
@@ -13,14 +12,16 @@ export default class TCPIPEquipment extends Equipment{
 		this.connection.on('connect', () => {
 			this.isStarted = true
 			console.log(`\n===> ${this.ipAddress}:${this.port}: ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО`)
+			this.connection.on('error', (error) => {
+				this.isStarted = false
+				console.log(`\n===> ${this.ipAddress}:${this.port}: ВОЗНИКЛА ОШИБКА: ${error}`)
+			})
+			this.connection.on('close', () => {
+				this.isStarted = false
+				console.log(`\n===> ${this.ipAddress}:${this.port}: СОЕДИНЕНИЕ ЗАКРЫЛОСЬ`)
+			})
 		})
-		this.connection.on('error', (error) => {
-			this.isStarted = false
-			console.log(`\n===> ${this.ipAddress}:${this.port}: ВОЗНИКЛА ОШИБКА: ${error}`)
-		})
-		this.connection.on('close', () => {
-			console.log(`\n===> ${this.ipAddress}:${this.port}: СОЕДИНЕНИЕ ЗАКРЫЛОСЬ`)
-		})
+
 	}
 
 	async start() {
@@ -36,7 +37,6 @@ export default class TCPIPEquipment extends Equipment{
 
 	stop() {
 		if (this.connection) {
-			this.connection.end()
 			this.connection.destroy()
 			this.isStarted = false
 			console.log(`\n===> ${this.ipAddress}:${this.port}: ОТКЛЮЧЕНИЕ ВЫПОЛНИТЬ УДАЛОСЬ`)
@@ -45,10 +45,9 @@ export default class TCPIPEquipment extends Equipment{
 			return false
 		}
 	}
-
 	write(data) {
 		try {
-			console.log(`\n===> ${this.ipAddress}:${this.port}: ПОЛУЧЕНЫ ДАННЫЕ ОТ ИСТОЧНИКА ДАННЫХ`)
+			console.log(`\n===> ${this.port}: ПОЛУЧЕНЫ ДАННЫЕ ОТ ИСТОЧНИКА ДАННЫХ`)
 			console.log('\nДАННЫЕ')
 			console.log(data)
 			if (Array.isArray(data)) {
@@ -65,7 +64,4 @@ export default class TCPIPEquipment extends Equipment{
 		}
 	}
 
-	check() {
-		return this.isStarted
-	}
 }

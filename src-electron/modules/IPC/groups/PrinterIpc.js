@@ -50,17 +50,17 @@ class PrinterIpc {
 			if (printer.id === '') {
 				await Printer.create(newPrinter)
 				let printerId = unwrap(await Printer.max('id'))
-				equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter, template)
+				await equipmentManager.addCastPrinter(printerId, printer.driver, newPrinter, template)
 			} else {
 				await Printer.update(newPrinter, { where: { id: printer.id } })
-				equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter, template)
+				await equipmentManager.updateCastPrinter(printer.id, printer.driver, newPrinter, template)
 			}
 		})
 
 		// удаление принтера по id
 		ipcMain.handle('delete-printer', async (event, printerId) => {
 			await Printer.destroy({ where: { id: printerId } })
-			equipmentManager.deleteCastPrinter(printerId)
+			await equipmentManager.deleteCastPrinter(printerId)
 		})
 
 		// проверка подключения к принтеру
@@ -77,22 +77,14 @@ class PrinterIpc {
 			console.log("equipmentManager.castPrinters ",equipmentManager.castPrinters)
 			let driverModel = equipmentManager.castPrinters.find((castPrinter) => castPrinter.id === printerId).driver
 			if (operation === 'on') {
-				if ((!driverModel.check() && await driverModel.start())|| (driverModel.constructor.name === 'FilePrinterDriver') ) {
 					await Printer.update({ is_active: true }, { where: { id: printerId } })
 					//Пишем геттер для менеджера
-					equipmentManager.sendDataSourceToPrinter(printerId,dataSourceId)
+					await equipmentManager.sendDataSourceToPrinter(printerId,dataSourceId)
 					return { type: 'ok-on', message: 'Данные отправлены!' }
-				} else {
-					return { type: 'error-on', message: 'Не удалось отправить данные!' }
-				}
 			} else if (operation === 'off') {
-				if ((driverModel.check() && driverModel.stop()) || (driverModel.constructor.name === 'FilePrinterDriver') ) {
 					await Printer.update({ is_active: false }, { where: { id: printerId } })
-					equipmentManager.turnOffPrinterAndDataSource(printerId,dataSourceId)
+					await equipmentManager.turnOffPrinterAndDataSource(printerId,dataSourceId)
 					return { type: 'ok-off', message: 'Отключение выполнить удалось!' }
-				} else {
-					return { type: 'error-off', message: 'Возникла ошибка, проверьте все подключения!' }
-				}
 			}
 		})
 	}

@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs/promises'
 import Equipment from "app/src-electron/modules/EQUIPMENT/drivers/Equipment";
 import {checkFile} from "app/src-electron/modules/helpers";
 
@@ -10,14 +10,14 @@ export default class FilePrinterDriver extends Equipment {
 		this.template = template
 	}
 
-	stop() {
+	close() {
 		return true
 	}
 	start() {
 		return checkFile(this.pathToFile)
 	}
 
-	write(data) {
+	async write(data) {
 		if (data !== undefined) {
 			console.log('\n===> ПОЛУЧЕНЫ ДАННЫЕ ОТ ИСТОЧНИКА ДАННЫХ В Файловом принтере')
 			console.log('\nДАННЫЕ')
@@ -45,11 +45,15 @@ export default class FilePrinterDriver extends Equipment {
 				}
 				console.log('\nЗАПОЛНЕННЫЙ ШАБЛОН')
 				console.log(completedTemplate)
-				fs.appendFile(this.pathToFile, completedTemplate + '\n', (error) => {
+				try {
+					await fs.appendFile(this.pathToFile,completedTemplate + '\n')
+				} catch(error) {
 					if (error) {
 						console.log(error)
 					}
-				})
+				}
+
+
 			}
 		}
 	}

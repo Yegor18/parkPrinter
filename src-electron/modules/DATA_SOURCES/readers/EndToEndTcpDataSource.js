@@ -1,50 +1,36 @@
 import net from 'node:net'
 import { MainWindow } from '../../helpers.js'
-import dataSourceManager from '../DataSourceManager.js'
-import DataSource from './DataSource.js'
+import TCPDataSource from "app/src-electron/modules/DATA_SOURCES/readers/TCPDataSource";
 
-class EndToEndTcpDataSource extends DataSource {
+class EndToEndTcpDataSource extends TCPDataSource {
 	constructor(id, type, port) {
-		super(() => {
-			console.log('\nИСТОЧНИК ДАННЫХ ВКЛЮЧАЕТСЯ')
-			this.server.listen(this.port, () => {
-				console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
-			})
-		},
-			() => {
-				console.log('\nИСТОЧНИК ДАННЫХ ВЫКЛЮЧАЕТСЯ')
-				this.closeServer()
-			})
+		super()
 		this.id = id
 		this.type = type
 		this.port = port
-		this.server = net.createServer((client) => {
-			client.setEncoding('utf-8')
-			client.on('data', (data) => {
+		this.server = net.createServer((server) => {
+			server.setEncoding('utf-8')
+			console.log(`\n===> ПОРТ ${this.port}: СЕРВЕР ПОДКЛЮЧИЛСЯ`)
+			server.on('close', () => {
+				console.log(`\n===> ПОРТ ${this.port}: ПОРТ ЗАКРЫТ`)
+			})
+			server.on('error', (error) => {
+				console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
+				if (error.code === 'EADDRINUSE') {
+					new MainWindow().window.webContents.send('opening-port-fail', `Порт ${this.port} уже занят`)
+				}
+			})
+			server.on('data', async(data) => {
 				console.log(`\n===> ПОРТ ${this.port}: ОТПРАВЛЕНИЕ ДАННЫХ ИЗ TCP (Сквозной)`)
 				console.log('\nДАННЫЕ')
 				console.log(data)
-				dataSourceManager.setDataForSending(this.id, [data])
+				await printer.write([data])
 			})
-			client.on('close', () => {
-				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
-			})
-		})
-		this.server.on('connection', () => {
-			console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ПОДКЛЮЧИЛСЯ`)
-		})
-		this.server.on('close', () => {
-			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ЗАКРЫТ`)
-		})
-		this.server.on('error', (error) => {
-			console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
-			if (error.code === 'EADDRINUSE') {
-				new MainWindow().window.webContents.send('opening-port-fail', `Порт ${this.port} уже занят`)
-			}
+
 		})
 	}
 
-	closeServer() {
+	close() {
 		if (this.server.listening) {
 			this.server.close((error) => {
 				if (error) {
@@ -54,6 +40,14 @@ class EndToEndTcpDataSource extends DataSource {
 			})
 		}
 	}
+
+	async readSourceAndWriteToPrinter(printer) {
+		console.log("Read data from source")
+		this.server.listen(this.port, () => {
+			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
+		})
+	}
+
 }
 
 export default EndToEndTcpDataSource

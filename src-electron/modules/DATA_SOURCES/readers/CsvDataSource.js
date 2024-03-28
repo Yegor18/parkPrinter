@@ -1,9 +1,8 @@
 import fs from 'node:fs/promises'
-import dataSourceManager from '../DataSourceManager.js'
-import DataSource from './DataSource.js'
 import { MainWindow, checkFile } from '../../helpers.js'
+import {FileDataSource} from "app/src-electron/modules/DATA_SOURCES/readers/FileDataSource";
 
-class CsvDataSource extends DataSource {
+class CsvDataSource extends FileDataSource {
 	constructor(id, type, pathToFile, pollingFrequency) {
 		super()
 		this.id = id
@@ -17,7 +16,9 @@ class CsvDataSource extends DataSource {
 	}
 	//Файл читается синхронно. Почему? Если файл большой data будет всегда undefined
 	//Обязательно протестировать большие файлы!!! Попробовать дробить большие файлы на части поменьше
-	async read() {
+	//написать новый метод
+	async readSourceAndWriteToPrinter(printer) {
+		console.log("Read data from source")
 			try {
 				const data = await fs.readFile(this.pathToFile, { encoding: 'utf8' });
 				let rows = data.split('\r\n')
@@ -31,7 +32,7 @@ class CsvDataSource extends DataSource {
 					}
 					result.push(resultRow)
 				}
-				return result
+				await printer.write(result)
 			} catch (err) {
 				console.log(err);
 			}

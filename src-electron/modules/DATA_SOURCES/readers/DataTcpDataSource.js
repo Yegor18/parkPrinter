@@ -1,33 +1,37 @@
 import net from 'node:net'
-import { MainWindow } from '../../helpers.js'
-import dataSourceManager from '../DataSourceManager.js'
-import DataSource from './DataSource.js'
+import {checkFile, MainWindow} from '../../helpers.js'
+import {tcpPingPort} from "tcp-ping-port";
+import TCPDataSource from "app/src-electron/modules/DATA_SOURCES/readers/TCPDataSource";
 
-class DataTcpDataSource extends DataSource {
+class DataTcpDataSource extends TCPDataSource {
 	constructor(id, type, port, mask) {
-		super(() => {
-			console.log('\nИСТОЧНИК ДАННЫХ ВКЛЮЧАЕТСЯ')
-			this.server.listen(this.port, () => {
-				console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
-			})
-		},
-			() => {
-				console.log('\nИСТОЧНИК ДАННЫХ ВЫКЛЮЧАЕТСЯ')
-				this.closeServer()
-			})
+		super()
 		this.id = id
 		this.type = type
 		this.port = port
 		this.mask = mask
-		this.server = net.createServer((client) => {
-			client.setEncoding('utf-8');
-			client.on('data', (data) => {
+		this.server = net.createServer((server) => {
+			server.setEncoding('utf-8');
+			console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ПОДКЛЮЧИЛСЯ`)
+			server.on('close', () => {
+				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
+			})
+			server.on('close', () => {
+				console.log(`\n===> ПОРТ ${this.port}: ПОРТ ЗАКРЫТ`)
+			})
+			server.on('error', (error) => {
+				console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
+				if (error.code === 'EADDRINUSE') {
+					new MainWindow().window.webContents.send('opening-port-fail', `Порт ${this.port} уже занят`)
+				}
+			})
+			server.on('data', (data) => {
 				let preparedData = this.prepareData(data)
 				if (preparedData !== null) {
 					console.log(`\n===> ПОРТ ${this.port}: ОТПРАВЛЕНИЕ ПОДГОТОВЛЕННЫХ ДАННЫХ ИЗ TCP (Данные)`)
 					console.log('\nДАННЫЕ')
 					console.log(preparedData)
-					dataSourceManager.setDataForSending(this.id, [preparedData])
+					printer.write([preparedData])
 				} else {
 					console.log(`\n===> ПОРТ ${this.port}: ПОЛУЧЕНЫ НЕВЕРНЫЕ ДАННЫЕ, ДАННЫЕ НЕЛЬЗЯ ОБРАБОТАТЬ СОГЛАСНО МАСКЕ`)
 					console.log('\nДАННЫЕ')
@@ -37,25 +41,15 @@ class DataTcpDataSource extends DataSource {
 					new MainWindow().window.webContents.send('data-is-not-valid-for-tcp-data-data-source', `Ошибка на слушающем порту ${this.port} в источнике данных TCP (Данные): получили неверные данные, данные нельзя обработать согласно маске. Данные: ${data} Маска: ${this.mask}`)
 				}
 			})
-			client.on('close', () => {
-				console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ОТКЛЮЧИЛСЯ`)
-			})
 		})
-		this.server.on('connection', () => {
-			console.log(`\n===> ПОРТ ${this.port}: КЛИЕНТ ПОДКЛЮЧИЛСЯ`)
-		})
-		this.server.on('close', () => {
-			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ЗАКРЫТ`)
-		})
-		this.server.on('error', (error) => {
-			console.log(`\n===> ПОРТ ${this.port}: ОШИБКА ПРИ ЗАПУСКЕ: ${error}`)
-			if (error.code === 'EADDRINUSE') {
-				new MainWindow().window.webContents.send('opening-port-fail', `Порт ${this.port} уже занят`)
-			}
-		})
+
 	}
 
-	closeServer() {
+	async isValid() {
+		return await tcpPingPort(this.ipAddress, parseInt(this.port))
+	}
+
+	close() {
 		if (this.server.listening) {
 			this.server.close((error) => {
 				if (error) {
@@ -66,20 +60,11 @@ class DataTcpDataSource extends DataSource {
 		}
 	}
 
-	prepareData(data) {
-		let separators = this.mask.split('[name]')[1].split('[value]')
-		let variables = {}
-		while (data !== '') {
-			let hold = data.split(separators[0])
-			if (hold.length === 1 || hold[1] === '' || !hold[1].includes(separators[1])) {
-				return null
-			}
-			let name = hold[0]
-			let value = hold[1].substring(0, hold[1].indexOf(separators[1]))
-			variables[name] = value
-			data = data.substring(data.indexOf(separators[1]) + 1)
-		}
-		return variables
+	readSourceAndWriteToPrinter(printer) {
+		console.log("Read data from source")
+		this.server.listen(this.port, () => {
+			console.log(`\n===> ПОРТ ${this.port}: ПОРТ ОТКРЫТ`)
+		})
 	}
 }
 
